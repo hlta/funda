@@ -1,0 +1,55 @@
+linters-settings:
+  govet:
+    check-shadowing: true
+  golint:
+    min-confidence: 0.8
+  gocritic:
+    enabled-checks:
+      - appendAssign
+      - caseOrder
+      - dupBranchBody
+      - ifElseChain
+      - paramTypeCombine
+      - typeUnparen
+    disabled-checks:
+      - commentFormatting
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+
+linters:
+  enable-all: true
+  disable:
+    - maligned
+    - prealloc
+    - gochecknoglobals
+    - gochecknoinits
+    - dupl
+    - funlen
+    - wsl
+    - exhaustivestruct
+    - godox
+    - gomnd
+
+issues:
+  exclude-use-default: false
+  exclude-rules:
+    # Exclude some linters from running on tests files.
+    - linters:
+        - errcheck
+        - govet
+        - staticcheck
+      path: _test\.go$
+
+    # Exclude known issues or false positives
+    # Example: excluding "error strings should not be capitalized"
+    - linters:
+        - govet
+        - golint
+      text: "error strings should not be capitalized or end with punctuation"
+
+    # Add more exclusions/rules as needed...
+
+# Service-specific settings
+service:
+  golangci-lint-version: 1.40.x # Use a specific version of golangci-lint
