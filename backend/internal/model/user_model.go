@@ -1,16 +1,13 @@
 package model
 
-// User represents the user for the system.
+import "gorm.io/gorm"
+
 type User struct {
-	ID        uint   `json:"id" gorm:"primaryKey"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Email     string `json:"email" gorm:"uniqueIndex"`
-	// Add additional fields as required
-	// Password    string `json:"-"` // Use json:"-" to not expose sensitive information
-	// CreatedAt   time.Time `json:"created_at"`
-	// UpdatedAt   time.Time `json:"updated_at"`
-	// ...
+	gorm.Model
+	FirstName string
+	LastName  string
+	Email     string `gorm:"uniqueIndex"`
+	Password  string // This should be a hashed password
 }
 
 // UserRepository is the interface that defines methods to interact with the User storage.

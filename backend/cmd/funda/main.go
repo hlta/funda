@@ -11,6 +11,7 @@ import (
 
 	"funda/configs"
 	"funda/internal/api"
+	"funda/internal/auth"
 	"funda/internal/middleware"
 	"funda/internal/model"
 	"funda/internal/service"
@@ -23,6 +24,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error loading configuration: %v", err)
 	}
+
+	// Initialize the auth package with the JWT secret from the config
+	auth.SetupAuth(config.OAuth)
 
 	// Setup database connection
 	db, err := setupDatabase(config.Database)
@@ -42,8 +46,15 @@ func main() {
 
 	userRepository := store.NewGormUserRepository(db)
 	userService := service.NewUserService(userRepository)
+	authService := service.NewAuthService(userRepository)
+
+	// Handler
 	userHandler := api.NewUserHandler(userService)
-	userHandler.Register(e) // Register routes
+	authHandler := api.NewAuthHandler(authService)
+
+	// Register routes
+	authHandler.Register(e)
+	userHandler.Register(e)
 
 	// Start server
 	e.Logger.Fatal(e.Start(":" + config.Server.Port))
