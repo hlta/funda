@@ -2,15 +2,66 @@ package main
 
 import (
 	"fmt"
-	"net/http"
+	"log"
+
+	"github.com/labstack/echo/v4"
+	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
+
+	"funda/configs"
+	"funda/internal/api"
+	"funda/internal/middleware"
+	"funda/internal/model"
+	"funda/internal/service"
+	"funda/internal/store"
 )
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello from Funda!")
+func main() {
+	// Load configuration
+	config, err := configs.LoadConfig(".")
+	if err != nil {
+		log.Fatalf("Error loading configuration: %v", err)
+	}
+
+	// Setup database connection
+	db, err := setupDatabase(config.Database)
+	if err != nil {
+		log.Fatalf("Failed to setup database: %v", err)
+	}
+
+	// Perform auto-migration
+	err = db.AutoMigrate(&model.User{})
+	if err != nil {
+		log.Fatalf("Failed to auto-migrate: %v", err)
+	}
+
+	// Initialize Echo and other components as before...
+	e := echo.New()
+	e.Use(middleware.OAuthMiddleware(config.OAuth)) // Adjusted for your setup
+
+	userRepository := store.NewGormUserRepository(db)
+	userService := service.NewUserService(userRepository)
+	userHandler := api.NewUserHandler(userService)
+	userHandler.Register(e) // Register routes
+
+	// Start server
+	e.Logger.Fatal(e.Start(":" + config.Server.Port))
 }
 
-func main() {
-	http.HandleFunc("/", handler)
-	fmt.Println("Starting Funda server on :8080")
-	http.ListenAndServe(":8080", nil)
+func setupDatabase(cfg configs.DatabaseConfig) (*gorm.DB, error) {
+	var db *gorm.DB
+	var err error
+
+	switch cfg.Type {
+	case "sqlite":
+		db, err = gorm.Open(sqlite.Open(cfg.Name), &gorm.Config{})
+	case "postgres":
+		dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", cfg.Host, cfg.Username, cfg.Password, cfg.Name, cfg.Port)
+		db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	default:
+		err = fmt.Errorf("unsupported database type: %s", cfg.Type)
+	}
+
+	return db, err
 }
