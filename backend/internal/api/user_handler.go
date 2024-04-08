@@ -27,7 +27,6 @@ func (h *UserHandler) Register(e *echo.Echo) {
 	e.GET("/users/:id", h.GetUserByID)
 	e.PUT("/users/:id", h.UpdateUser)
 	e.DELETE("/users/:id", h.DeleteUser)
-	// ...other routes like list users, etc.
 }
 
 // CreateUser is the handler for the POST /users endpoint.
@@ -88,5 +87,3 @@ func (h *UserHandler) DeleteUser(c echo.Context) error {
 	}
 	return c.NoContent(http.StatusNoContent)
 }
-
-// ...other handler methods
