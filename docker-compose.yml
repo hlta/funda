@@ -11,7 +11,7 @@ services:
 
   funda-frontend:
     build:
-      context: ./frontend
+      context: ./front-end
       dockerfile: Dockerfile
     ports:
       - "80:80"

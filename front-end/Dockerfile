@@ -1,10 +1,12 @@
 # Build stage
 FROM node:lts as build
 WORKDIR /app
-COPY package.json yarn.lock ./
-RUN yarn install
+COPY package.json package-lock.json ./
+RUN npm install
 COPY . .
-RUN yarn build
+# Increase Node.js memory limit during build
+ENV NODE_OPTIONS="--max_old_space_size=4096"
+RUN npm run build:prod
 
 # Production stage
 FROM nginx:stable-alpine as production
