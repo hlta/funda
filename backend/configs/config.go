@@ -41,6 +41,14 @@ func LoadConfig(path string) (config Config, err error) {
 
 	viper.AutomaticEnv()
 
+	// Bind environment variables for database config
+	viper.BindEnv("database.type", "DATABASE_TYPE")
+	viper.BindEnv("database.host", "DATABASE_HOST")
+	viper.BindEnv("database.port", "DATABASE_PORT")
+	viper.BindEnv("database.username", "DATABASE_USERNAME")
+	viper.BindEnv("database.password", "DATABASE_PASSWORD")
+	viper.BindEnv("database.name", "DATABASE_NAME")
+
 	err = viper.ReadInConfig()
 	if err != nil {
 		log.Printf("Error reading config file, %s", err)

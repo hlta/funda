@@ -7,7 +7,15 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - GIN_MODE=release
+      - ECHO_MODE=release
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_USERNAME=yourusername
+      - DATABASE_PASSWORD=yourpassword
+      - DATABASE_NAME=yourdatabase
+      - DATABASE_TYPE=postgres
+    depends_on:
+      - postgres
 
   funda-frontend:
     build:
@@ -15,3 +23,18 @@ services:
       dockerfile: Dockerfile
     ports:
       - "80:80"
+
+  postgres:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=yourusername
+      - POSTGRES_PASSWORD=yourpassword
+      - POSTGRES_DB=yourdatabase
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
+
