@@ -1,33 +1,38 @@
-# Start from the official Golang image to build the binary.
-FROM golang:1.22.2 as builder
+# Start from the official Golang image to build the binary
+FROM golang:1.22.2 AS builder
 
-# Set the Current Working Directory inside the container.
+# Set the working directory inside the container
 WORKDIR /app
 
-# Copy go mod and sum files.
+# Copy go mod and sum files
 COPY go.mod go.sum ./
 
-# Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed.
+# Download all dependencies
 RUN go mod download
 
-# Copy the source from the current directory to the Working Directory inside the container.
+# Copy the source code from the current directory to the working directory inside the container
 COPY . .
 
-# Build the Go app.
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o funda ./cmd/funda/
+# Install necessary dependencies for CGO
+RUN apt-get update && apt-get install -y gcc g++ make
 
-######## Start a new stage from scratch #######
+# Build the Go app with CGO enabled
+RUN CGO_ENABLED=1 GOOS=linux go build -o funda ./cmd/funda/
+
+# Start a new stage from scratch
 FROM alpine:latest
 
-RUN apk --no-cache add ca-certificates
+# Install necessary packages
+RUN apk --no-cache add ca-certificates sqlite-libs
 
+# Set the working directory inside the container
 WORKDIR /root/
 
-# Copy the Pre-built binary file from the previous stage.
-COPY --from=builder /app/funda .
+# Copy the pre-built binary file and configuration from the previous stage
+COPY --from=builder /app/funda /app/app.yaml ./
 
-# Expose port 8080 to the outside world.
+# Expose port 8080 to the outside world
 EXPOSE 8080
 
-# Command to run the executable.
+# Command to run the executable
 CMD ["./funda"]
