@@ -21,7 +21,7 @@ const Login = () => (
         <EmptyLayout.Section center>
             { /* START Header */}
             <HeaderAuth 
-                title="Sign In to Application"
+                title="Sign In to Funda"
             />
             { /* END Header */}
             { /* START Form */}
@@ -31,18 +31,12 @@ const Login = () => (
                         Email Adress
                     </Label>
                     <Input type="email" name="email" id="emailAdress" placeholder="Enter email..." className="bg-white" />
-                    <FormText color="muted">
-                        We&amp;ll never share your email with anyone else.
-                    </FormText>
                 </FormGroup>
                 <FormGroup>
                     <Label for="password">
                         Password
                     </Label>
                     <Input type="password" name="password" id="password" placeholder="Password..." className="bg-white" />
-                </FormGroup>
-                <FormGroup>
-                    <CustomInput type="checkbox" id="rememberPassword" label="Remember Password" inline />
                 </FormGroup>
                 <ThemeConsumer>
                 {
@@ -57,10 +51,10 @@ const Login = () => (
             { /* END Form */}
             { /* START Bottom Links */}
             <div className="d-flex mb-5">
-                <Link to="/pages/forgotpassword" className="text-decoration-none">
+                <Link to="/forgot-password" className="text-decoration-none">
                     Forgot Password
                 </Link>
-                <Link to="/pages/register" className="ml-auto text-decoration-none">
+                <Link to="/register" className="ml-auto text-decoration-none">
                     Register
                 </Link>
             </div>

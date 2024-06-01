@@ -69,10 +69,10 @@ const Register = () => (
             { /* END Form */}
             { /* START Bottom Links */}
             <div className="d-flex mb-5">
-                <Link to="/pages/forgot-password" className="text-decoration-none">
+                <Link to="/forgot-password" className="text-decoration-none">
                     Forgot Password
                 </Link>
-                <Link to="/pages/login" className="ml-auto text-decoration-none">
+                <Link to="/login" className="ml-auto text-decoration-none">
                     Login
                 </Link>
             </div>
