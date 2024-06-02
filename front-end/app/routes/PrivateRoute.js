@@ -1,9 +1,9 @@
 import React from 'react';
 import { Route, Redirect } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';  // Adjusted to use the hook from the hooks directory
 
 const PrivateRoute = ({ component: Component, ...rest }) => {
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated } = useAuth(); // This will now correctly use the custom hook
 
     return (
         <Route
@@ -20,4 +20,5 @@ const PrivateRoute = ({ component: Component, ...rest }) => {
 };
 
 export default PrivateRoute;
+
 
