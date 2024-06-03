@@ -42,45 +42,45 @@ const Register = () => {
         <HeaderAuth title="Create Account" />
         <Form className="mb-3" onSubmit={handleSubmit(onSubmit)}>
           <FormGroup>
-            <Label for="username">Username</Label>
+            <Label for="firstName">First Name</Label>
             <Controller
-              name="username"
+              name="firstName"
               control={control}
-              rules={{ required: "Username is required" }}
+              rules={{ required: "First name is required" }}
               render={({ field }) => (
                 <Input
                   {...field}
                   type="text"
-                  id="username"
-                  placeholder="Enter a Username..."
+                  id="firstName"
+                  placeholder="Enter your first name..."
                   className="bg-white"
-                  invalid={errors.username ? true : false}
+                  invalid={errors.firstName ? true : false}
                 />
               )}
             />
-            {errors.username && (
-              <FormFeedback>{errors.username.message}</FormFeedback>
+            {errors.firstName && (
+              <FormFeedback>{errors.firstName.message}</FormFeedback>
             )}
           </FormGroup>
           <FormGroup>
-            <Label for="password">Password</Label>
+            <Label for="lastName">Last Name</Label>
             <Controller
-              name="password"
+              name="lastName"
               control={control}
-              rules={{ required: "Password is required" }}
+              rules={{ required: "Last name is required" }}
               render={({ field }) => (
                 <Input
                   {...field}
-                  type="password"
-                  id="password"
-                  placeholder="Password..."
+                  type="text"
+                  id="lastName"
+                  placeholder="Enter your last name..."
                   className="bg-white"
-                  invalid={errors.password ? true : false}
+                  invalid={errors.lastName ? true : false}
                 />
               )}
             />
-            {errors.password && (
-              <FormFeedback>{errors.password.message}</FormFeedback>
+            {errors.lastName && (
+              <FormFeedback>{errors.lastName.message}</FormFeedback>
             )}
           </FormGroup>
           <FormGroup>
@@ -94,7 +94,7 @@ const Register = () => {
                   {...field}
                   type="email"
                   id="emailAddress"
-                  placeholder="Enter email..."
+                  placeholder="Enter your email..."
                   className="bg-white"
                   invalid={errors.email ? true : false}
                 />
@@ -102,6 +102,27 @@ const Register = () => {
             />
             {errors.email && (
               <FormFeedback>{errors.email.message}</FormFeedback>
+            )}
+          </FormGroup>
+          <FormGroup>
+            <Label for="password">Password</Label>
+            <Controller
+              name="password"
+              control={control}
+              rules={{ required: "Password is required" }}
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  type="password"
+                  id="password"
+                  placeholder="Enter a password..."
+                  className="bg-white"
+                  invalid={errors.password ? true : false}
+                />
+              )}
+            />
+            {errors.password && (
+              <FormFeedback>{errors.password.message}</FormFeedback>
             )}
           </FormGroup>
           <FormGroup>
@@ -122,6 +143,9 @@ const Register = () => {
                 />
               )}
             />
+            {errors.acceptTerms && (
+              <FormFeedback>{errors.acceptTerms.message}</FormFeedback>
+            )}
           </FormGroup>
           <ThemeConsumer>
             {({ color }) => (
