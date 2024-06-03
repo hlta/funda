@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { Link, useHistory } from "react-router-dom";
 import { useAuth } from "../../../hooks/useAuth";
@@ -13,6 +13,7 @@ import {
   Label,
   EmptyLayout,
   ThemeConsumer,
+  Alert,
 } from "../../../components";
 
 import { HeaderAuth } from "../../components/Pages/HeaderAuth";
@@ -26,13 +27,16 @@ const Register = () => {
   } = useForm();
   const { performRegister } = useAuth();
   const history = useHistory();
+  const [apiError, setApiError] = useState("");
 
-  const onSubmit = async (data) => {
+  const handleRegistartion = async (data) => {
     try {
       await performRegister(data);
       history.push("/dashboard"); // Redirect after successful registration
     } catch (error) {
       console.error("Registration failed:", error);
+      setApiError("Failed to register. Please try again."); // Set the API error message
+      // Prevent automatic navigation to another page
     }
   };
 
@@ -40,7 +44,12 @@ const Register = () => {
     <EmptyLayout>
       <EmptyLayout.Section center width={480}>
         <HeaderAuth title="Create Account" />
-        <Form className="mb-3" onSubmit={handleSubmit(onSubmit)}>
+        <Form className="mb-3" onSubmit={handleSubmit(handleRegistartion)}>
+          {apiError && (
+            <Alert color="danger" className="mb-3">
+              {apiError}
+            </Alert> // Displaying the API error message
+          )}
           <FormGroup>
             <Label for="firstName">First Name</Label>
             <Controller

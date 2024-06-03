@@ -6,12 +6,9 @@ export const useAuth = () => {
     const { isAuthenticated, token, login, logout } = useContext(AuthContext);
 
     const performLogin = async (credentials) => {
-        try {
-            const token = await authService.login(credentials);
-            login(token);
-        } catch (error) {
-            console.error('Login failed:', error);
-        }
+        const token = await authService.login(credentials);
+        login(token);
+
     };
 
     const performLogout = () => {
@@ -19,12 +16,10 @@ export const useAuth = () => {
     };
 
     const performRegister = async (userData) => {
-        try {
-            const token = await authService.register(userData);
-            login(token);
-        } catch (error) {
-            console.error('Registration failed:', error);
-        }
+
+        const token = await authService.register(userData);
+        login(token);
+
     };
 
     return {
