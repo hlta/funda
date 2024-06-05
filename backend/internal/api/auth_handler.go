@@ -4,6 +4,7 @@ import (
 	"funda/internal/model"
 	"funda/internal/service"
 	"net/http"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 )
@@ -27,11 +28,15 @@ func NewAuthHandler(authService *service.AuthService) *AuthHandler {
 func (h *AuthHandler) Signup(c echo.Context) error {
 	var user model.User
 	if err := c.Bind(&user); err != nil {
-		return err
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request")
 	}
 
+	// Attempt to create the user
 	if err := h.authService.Signup(&user); err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		if strings.Contains(err.Error(), "unique constraint") {
+			return echo.NewHTTPError(http.StatusConflict, "Email already in use")
+		}
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to register user")
 	}
 
 	return c.NoContent(http.StatusCreated)

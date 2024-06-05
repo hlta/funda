@@ -1,3 +1,20 @@
 database:
-  type: "sqlite" 
-  name: "funda_database.db" 
+  type: "sqlite"
+  name: "funda_database.db"
+
+cors:
+  allow_origins:
+    - "http://localhost:4100" 
+  allow_methods:
+    - "GET"
+    - "POST"
+    - "PUT"
+    - "DELETE"
+  allow_headers:
+    - "Content-Type"
+    - "Authorization"
+    - "X-Requested-With"
+  allow_credentials: true
+  expose_headers:
+    - "Content-Length"
+  max_age: 3600  # 1 hour

@@ -6,13 +6,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-// Config stores all configuration of the application.
-type Config struct {
-	Server   ServerConfig
-	Database DatabaseConfig
-	OAuth    OAuthConfig
-}
-
 type ServerConfig struct {
 	Port string
 }
@@ -26,9 +19,27 @@ type DatabaseConfig struct {
 	Name     string
 }
 
+// CORSConfig holds the configuration for CORS middleware
+type CORSConfig struct {
+	AllowOrigins     []string
+	AllowMethods     []string
+	AllowHeaders     []string
+	AllowCredentials bool
+	ExposeHeaders    []string `json:"exposeHeaders"`
+	MaxAge           int      `json:"maxAge"`
+}
+
 // OAuthConfig stores configuration for OAuth, including secrets and keys.
 type OAuthConfig struct {
 	JWTSecret string
+}
+
+// Config stores all configuration of the application.
+type Config struct {
+	Server   ServerConfig
+	Database DatabaseConfig
+	OAuth    OAuthConfig
+	CORS     CORSConfig
 }
 
 // LoadConfig reads configuration from file or environment variables.

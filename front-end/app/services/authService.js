@@ -1,4 +1,4 @@
-const API_URL = '/api'; // Base URL for your API
+const API_URL = 'http://localhost:8080'; // Base URL for your API
 
 export const login = async (credentials) => {
     const response = await fetch(`${API_URL}/login`, {
@@ -14,7 +14,7 @@ export const login = async (credentials) => {
 };
 
 export const register = async (userData) => {
-    const response = await fetch(`${API_URL}/register`, {
+    const response = await fetch(`${API_URL}/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData),

@@ -42,8 +42,8 @@ func main() {
 
 	// Initialize Echo and other components as before...
 	e := echo.New()
-	e.Use(middleware.OAuthMiddleware(config.OAuth)) // Adjusted for your setup
-
+	e.Use(middleware.CORSMiddleware(config.CORS))
+	e.Use(middleware.OAuthMiddleware(config.OAuth))
 	userRepository := store.NewGormUserRepository(db)
 	userService := service.NewUserService(userRepository)
 	authService := service.NewAuthService(userRepository)

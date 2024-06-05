@@ -50,7 +50,7 @@ npm install
 npm run dev
 ```
 
-Visit `http://localhost:3000` to view the app.
+Visit `http://localhost:4100` to view the app.
 
 ### Docker Setup (Optional)
 
