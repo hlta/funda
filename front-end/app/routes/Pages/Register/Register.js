@@ -29,22 +29,23 @@ const Register = () => {
   const history = useHistory();
   const [apiError, setApiError] = useState("");
 
-  const handleRegistartion = async (data) => {
+  const handleRegistration = async (data) => {
     try {
-      await performRegister(data);
-      history.push("/dashboard"); // Redirect after successful registration
+      console.log(data);
+        await performRegister(data);
+        history.push("/dashboard"); 
     } catch (error) {
-      console.error("Registration failed:", error);
-      setApiError("Failed to register. Please try again."); // Set the API error message
-      // Prevent automatic navigation to another page
+        console.error("Registration failed:", error);
+        setApiError("Failed to register. Please try again."); 
     }
-  };
+};
+
 
   return (
     <EmptyLayout>
       <EmptyLayout.Section center width={480}>
         <HeaderAuth title="Create Account" />
-        <Form className="mb-3" onSubmit={handleSubmit(handleRegistartion)}>
+        <Form className="mb-3" onSubmit={handleSubmit(handleRegistration)}>
           {apiError && (
             <Alert color="danger" className="mb-3">
               {apiError}

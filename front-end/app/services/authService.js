@@ -6,11 +6,11 @@ export const login = async (credentials) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credentials),
     });
+    const data = await response.json(); // Always parse JSON since backend sends JSON responses
     if (!response.ok) {
-        throw new Error('Failed to login');
+        throw new Error(data.error || 'Login failed. Please check your credentials and try again.');
     }
-    const data = await response.json();
-    return data.token;
+    return data.token; // Assuming the response will always contain a token when successful
 };
 
 export const register = async (userData) => {
@@ -19,9 +19,9 @@ export const register = async (userData) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData),
     });
+    const data = await response.json(); // Always parse JSON since backend sends JSON responses
     if (!response.ok) {
-        throw new Error('Failed to register');
+        throw new Error(data.error || 'Registration failed. Please try different credentials.');
     }
-    const data = await response.json();
-    return data.token;
+    return data.message; // Use the message from the successful registration
 };

@@ -16,11 +16,13 @@ export const useAuth = () => {
     };
 
     const performRegister = async (userData) => {
-
-        const token = await authService.register(userData);
-        login(token);
-
-    };
+        try {
+            await authService.register(userData);  
+            await performLogin({ email: userData.email, password: userData.password });
+        } catch (error) {
+            throw error;  
+        }
+    };    
 
     return {
         isAuthenticated,
