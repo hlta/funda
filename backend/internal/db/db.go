@@ -15,7 +15,7 @@ func SetupDatabase(cfg configs.DatabaseConfig, log logger.Logger) (*gorm.DB, err
 	var err error
 	switch cfg.Type {
 	case "sqlite":
-		db, err = gorm.Open(sqlite.Open(cfg.Name), &gorm.Config{})
+		db, err = gorm.Open(sqlite.Open(cfg.Name), &gorm.Config{TranslateError: true})
 	case "postgres":
 		dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", cfg.Host, cfg.Username, cfg.Password, cfg.Name, cfg.Port)
 		db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})

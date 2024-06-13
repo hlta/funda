@@ -36,14 +36,16 @@ const Register = () => {
     try {
       await performRegister(data);
     } catch (error) {
-      if (error.response && error.response.Errors) {
-        error.response.Errors.forEach((fieldError) => {
-          setError(fieldError.Field, {
+      if (error.response && error.response.errors) {
+       console.log(error.response.errors)
+        error.response.errors.forEach((fieldError) => {
+          setError(fieldError.field, {
             type: 'server',
-            message: fieldError.Message,
+            message: fieldError.message,
           });
         });
       } else {
+        console.log(error.response)
         setServerError(error.message || 'An unexpected error occurred. Please try again later.');
       }
     }

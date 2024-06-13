@@ -19,7 +19,7 @@ func NewGormUserRepository(db *gorm.DB) *GormUserRepository {
 
 func (r *GormUserRepository) Create(user *model.User) error {
 	if err := r.DB.Create(user).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return model.ErrEmailExists
 		}
 		return err
