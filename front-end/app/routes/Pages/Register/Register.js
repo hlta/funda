@@ -23,33 +23,41 @@ const Register = () => {
   const {
     control,
     handleSubmit,
-    formState: { errors },
+    setError,
+    formState: { errors, isSubmitting },
   } = useForm();
   const { performRegister } = useAuth();
+  const [serverError, setServerError] = useState('');
+
   const history = useHistory();
-  const [apiError, setApiError] = useState("");
 
   const handleRegistration = async (data) => {
+    setServerError('');
     try {
-      console.log(data);
-        await performRegister(data);
-        history.push("/dashboard"); 
+      await performRegister(data);
     } catch (error) {
-        console.error("Registration failed:", error);
-        setApiError("Failed to register. Please try again."); 
+      if (error.response && error.response.Errors) {
+        error.response.Errors.forEach((fieldError) => {
+          setError(fieldError.Field, {
+            type: 'server',
+            message: fieldError.Message,
+          });
+        });
+      } else {
+        setServerError(error.message || 'An unexpected error occurred. Please try again later.');
+      }
     }
-};
-
+  };
 
   return (
     <EmptyLayout>
       <EmptyLayout.Section center width={480}>
         <HeaderAuth title="Create Account" />
         <Form className="mb-3" onSubmit={handleSubmit(handleRegistration)}>
-          {apiError && (
+          {serverError && (
             <Alert color="danger" className="mb-3">
-              {apiError}
-            </Alert> // Displaying the API error message
+              {serverError}
+            </Alert>
           )}
           <FormGroup>
             <Label for="firstName">First Name</Label>
@@ -159,7 +167,7 @@ const Register = () => {
           </FormGroup>
           <ThemeConsumer>
             {({ color }) => (
-              <Button type="submit" color={color} block>
+              <Button disabled={isSubmitting} type="submit" color={color} block>
                 Create Account
               </Button>
             )}

@@ -1,16 +1,23 @@
 const API_URL = 'http://localhost:8080'; // Base URL for your API
 
+const handleError = async (response) => {
+    const data = await response.json();
+    if (!response.ok) {
+        const error = new Error(data.message || 'Request failed');
+        error.response = data;
+        throw error;
+    }
+    return data;
+};
+
 export const login = async (credentials) => {
     const response = await fetch(`${API_URL}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credentials),
     });
-    const data = await response.json(); // Always parse JSON since backend sends JSON responses
-    if (!response.ok) {
-        throw new Error(data.error || 'Login failed. Please check your credentials and try again.');
-    }
-    return data.token; // Assuming the response will always contain a token when successful
+    const data = await handleError(response);
+    return data.token;
 };
 
 export const register = async (userData) => {
@@ -19,9 +26,6 @@ export const register = async (userData) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData),
     });
-    const data = await response.json(); // Always parse JSON since backend sends JSON responses
-    if (!response.ok) {
-        throw new Error(data.error || 'Registration failed. Please try different credentials.');
-    }
-    return data.message; // Use the message from the successful registration
+    const data = await handleError(response);
+    return data.message; 
 };

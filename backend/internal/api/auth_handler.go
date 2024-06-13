@@ -1,6 +1,8 @@
 package api
 
 import (
+	"errors"
+	"funda/internal/middleware"
 	"funda/internal/model"
 	"funda/internal/service"
 	"net/http"
@@ -29,13 +31,29 @@ func (h *AuthHandler) Register(e *echo.Echo) {
 func (h *AuthHandler) Signup(c echo.Context) error {
 	var user model.User
 	if err := c.Bind(&user); err != nil {
-		c.Logger().Errorf("Signup: Failed to bind user data: %v", err)
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request details"})
+		return echo.NewHTTPError(http.StatusBadRequest, middleware.ErrorResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Invalid request details",
+		})
 	}
 
 	if err := h.authService.Signup(&user); err != nil {
-		c.Logger().Errorf("Signup: Failed: %v", err)
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Signup failure"})
+		if errors.Is(err, model.ErrEmailExists) {
+			return echo.NewHTTPError(http.StatusConflict, middleware.ErrorResponse{
+				Code:    http.StatusConflict,
+				Message: "This email is already registered",
+				Errors: []middleware.FieldError{
+					{
+						Field:   "email",
+						Message: "This email is already in use",
+					},
+				},
+			})
+		}
+		return echo.NewHTTPError(http.StatusInternalServerError, middleware.ErrorResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "An unexpected error occurred. Please try again later.",
+		})
 	}
 
 	return c.JSON(http.StatusCreated, map[string]string{"message": "User successfully registered"})
@@ -48,14 +66,18 @@ func (h *AuthHandler) Login(c echo.Context) error {
 		Password string `json:"password"`
 	}
 	if err := c.Bind(&loginReq); err != nil {
-		c.Logger().Errorf("Login: Failed to bind login data: %v", err)
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request details"})
+		return echo.NewHTTPError(http.StatusBadRequest, middleware.ErrorResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Invalid request details",
+		})
 	}
 
 	token, err := h.authService.Login(loginReq.Email, loginReq.Password)
 	if err != nil {
-		c.Logger().Errorf("Login: Failed for %s: %v", loginReq.Email, err)
-		return c.JSON(http.StatusUnauthorized, map[string]string{"error": "Invalid credentials"})
+		return echo.NewHTTPError(http.StatusUnauthorized, middleware.ErrorResponse{
+			Code:    http.StatusUnauthorized,
+			Message: "Invalid credentials",
+		})
 	}
 
 	return c.JSON(http.StatusOK, map[string]string{"token": token})

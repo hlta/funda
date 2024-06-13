@@ -1,6 +1,8 @@
 package service
 
 import (
+	"errors"
+	"fmt"
 	"funda/internal/auth"
 	"funda/internal/logger"
 	"funda/internal/model"
@@ -31,8 +33,11 @@ func (s *AuthService) Signup(user *model.User) error {
 	}
 	user.Password = string(hashedPassword)
 	if err := s.userRepo.Create(user); err != nil {
+		if errors.Is(err, model.ErrEmailExists) {
+			return fmt.Errorf("email already exists: %w", err)
+		}
 		s.log.WithField("action", "creating user").Error(err.Error())
-		return err
+		return fmt.Errorf("signup failure: %w", err)
 	}
 	s.log.WithField("action", "user signed up").Info("User successfully registered")
 	return nil

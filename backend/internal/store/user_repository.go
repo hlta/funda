@@ -1,6 +1,7 @@
 package store
 
 import (
+	"errors"
 	"funda/internal/model"
 
 	"gorm.io/gorm"
@@ -16,10 +17,14 @@ func NewGormUserRepository(db *gorm.DB) *GormUserRepository {
 	return &GormUserRepository{DB: db}
 }
 
-// Create adds a new user to the database.
 func (r *GormUserRepository) Create(user *model.User) error {
-	result := r.DB.Create(user)
-	return result.Error
+	if err := r.DB.Create(user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return model.ErrEmailExists
+		}
+		return err
+	}
+	return nil
 }
 
 // RetrieveByID finds a user by their ID.
