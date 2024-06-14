@@ -1,10 +1,6 @@
 import React, { createContext, useReducer, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
-import axios from 'axios';
-
-const API_URL = 'http://localhost:8080';
-
-export const AuthContext = createContext();
+import * as authService from '../services/authService';
 
 const initialState = {
     isAuthenticated: false,
@@ -27,15 +23,17 @@ const authReducer = (state, action) => {
     }
 };
 
+export const AuthContext = createContext();
+
 export const AuthProvider = ({ children }) => {
     const [state, dispatch] = useReducer(authReducer, initialState);
     const history = useHistory();
 
     const checkAuth = async () => {
-        try {
-            await axios.get(`${API_URL}/auth/check`, { withCredentials: true });
+        const isAuthenticated = await authService.checkAuth();
+        if (isAuthenticated) {
             dispatch({ type: 'LOGIN' });
-        } catch (error) {
+        } else {
             dispatch({ type: 'LOGOUT' });
         }
     };
@@ -44,24 +42,12 @@ export const AuthProvider = ({ children }) => {
         checkAuth();
     }, []);
 
-    const login = async (credentials) => {
-        try {
-            await axios.post(`${API_URL}/login`, credentials, { withCredentials: true });
-            dispatch({ type: 'LOGIN' });
-            history.push('/');
-        } catch (error) {
-            console.error('Login failed:', error);
-        }
+    const login = () => {
+        dispatch({ type: 'LOGIN' });
     };
 
-    const logout = async () => {
-        try {
-            await axios.post(`${API_URL}/logout`, {}, { withCredentials: true });
-            dispatch({ type: 'LOGOUT' });
-            history.push('/login');
-        } catch (error) {
-            console.error('Logout failed:', error);
-        }
+    const logout = () => {
+        dispatch({ type: 'LOGOUT' });
     };
 
     return (

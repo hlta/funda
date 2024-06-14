@@ -1,4 +1,6 @@
-const API_URL = 'http://localhost:8080';
+import config from '../config';
+
+const API_URL = config.apiUrl;
 
 const handleError = async (response) => {
     const data = await response.json();
@@ -35,4 +37,19 @@ export const logout = async () => {
         credentials: 'include', // Important for sending cookies
     });
     return handleError(response);
+};
+
+export const checkAuth = async () => {
+    try {
+        const response = await fetch(`${API_URL}/auth/check`, {
+            credentials: 'include',
+        });
+        if (response.ok) {
+            return true;
+        } else {
+            return false;
+        }
+    } catch (error) {
+        return false;
+    }
 };
