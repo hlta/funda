@@ -2,21 +2,19 @@ package service
 
 import (
 	"errors"
-	"fmt"
 	"funda/internal/auth"
 	"funda/internal/logger"
 	"funda/internal/model"
 
+	"github.com/golang-jwt/jwt/v4"
 	"golang.org/x/crypto/bcrypt"
 )
 
-// AuthService provides authentication functionalities.
 type AuthService struct {
 	userRepo model.UserRepository
 	log      logger.Logger
 }
 
-// NewAuthService creates a new instance of AuthService with dependency injection.
 func NewAuthService(userRepo model.UserRepository, log logger.Logger) *AuthService {
 	return &AuthService{
 		userRepo: userRepo,
@@ -24,7 +22,6 @@ func NewAuthService(userRepo model.UserRepository, log logger.Logger) *AuthServi
 	}
 }
 
-// Signup handles user registration with password hashing.
 func (s *AuthService) Signup(user *model.User) error {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
@@ -34,16 +31,15 @@ func (s *AuthService) Signup(user *model.User) error {
 	user.Password = string(hashedPassword)
 	if err := s.userRepo.Create(user); err != nil {
 		if errors.Is(err, model.ErrEmailExists) {
-			return fmt.Errorf("email already exists: %w", err)
+			return errors.New("email already exists")
 		}
 		s.log.WithField("action", "creating user").Error(err.Error())
-		return fmt.Errorf("signup failure: %w", err)
+		return errors.New("signup failure")
 	}
 	s.log.WithField("action", "user signed up").Info("User successfully registered")
 	return nil
 }
 
-// Login handles user authentication and token generation.
 func (s *AuthService) Login(email, password string) (string, error) {
 	user, err := s.userRepo.RetrieveByEmail(email)
 	if err != nil {
@@ -63,5 +59,24 @@ func (s *AuthService) Login(email, password string) (string, error) {
 	}
 
 	s.log.WithField("action", "user logged in").Info("Token successfully generated")
+	return token, nil
+}
+
+func (s *AuthService) VerifyToken(tokenString string) (*jwt.Token, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &auth.Claims{}, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("invalid signing method")
+		}
+		return auth.GetJWTKey(), nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !token.Valid {
+		return nil, errors.New("invalid token")
+	}
+
 	return token, nil
 }

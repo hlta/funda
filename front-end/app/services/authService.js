@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:8080'; // Base URL for your API
+const API_URL = 'http://localhost:8080';
 
 const handleError = async (response) => {
     const data = await response.json();
@@ -15,9 +15,9 @@ export const login = async (credentials) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credentials),
+        credentials: 'include', // Important for sending cookies
     });
-    const data = await handleError(response);
-    return data.token;
+    return handleError(response);
 };
 
 export const register = async (userData) => {
@@ -26,6 +26,13 @@ export const register = async (userData) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData),
     });
-    const data = await handleError(response);
-    return data.message; 
+    return handleError(response);
+};
+
+export const logout = async () => {
+    const response = await fetch(`${API_URL}/logout`, {
+        method: 'POST',
+        credentials: 'include', // Important for sending cookies
+    });
+    return handleError(response);
 };

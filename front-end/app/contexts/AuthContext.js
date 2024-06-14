@@ -1,28 +1,26 @@
-import React, { createContext, useReducer } from 'react';
+import React, { createContext, useReducer, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
+import axios from 'axios';
+
+const API_URL = 'http://localhost:8080';
 
 export const AuthContext = createContext();
 
 const initialState = {
-    isAuthenticated: !!sessionStorage.getItem('token'),
-    token: sessionStorage.getItem('token'),
+    isAuthenticated: false,
 };
 
 const authReducer = (state, action) => {
     switch (action.type) {
         case 'LOGIN':
-            sessionStorage.setItem('token', action.payload.token);
             return {
                 ...state,
                 isAuthenticated: true,
-                token: action.payload.token,
             };
         case 'LOGOUT':
-            sessionStorage.removeItem('token');
             return {
                 ...state,
                 isAuthenticated: false,
-                token: null,
             };
         default:
             return state;
@@ -33,14 +31,37 @@ export const AuthProvider = ({ children }) => {
     const [state, dispatch] = useReducer(authReducer, initialState);
     const history = useHistory();
 
-    const login = (token) => {
-        dispatch({ type: 'LOGIN', payload: { token } });
-        history.push('/'); // Redirect to dashboard after login
+    const checkAuth = async () => {
+        try {
+            await axios.get(`${API_URL}/auth/check`, { withCredentials: true });
+            dispatch({ type: 'LOGIN' });
+        } catch (error) {
+            dispatch({ type: 'LOGOUT' });
+        }
     };
 
-    const logout = () => {
-        dispatch({ type: 'LOGOUT' });
-        history.push('/login'); // Redirect to login page after logout
+    useEffect(() => {
+        checkAuth();
+    }, []);
+
+    const login = async (credentials) => {
+        try {
+            await axios.post(`${API_URL}/login`, credentials, { withCredentials: true });
+            dispatch({ type: 'LOGIN' });
+            history.push('/');
+        } catch (error) {
+            console.error('Login failed:', error);
+        }
+    };
+
+    const logout = async () => {
+        try {
+            await axios.post(`${API_URL}/logout`, {}, { withCredentials: true });
+            dispatch({ type: 'LOGOUT' });
+            history.push('/login');
+        } catch (error) {
+            console.error('Logout failed:', error);
+        }
     };
 
     return (

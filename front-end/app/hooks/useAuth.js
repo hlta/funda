@@ -3,30 +3,33 @@ import { AuthContext } from '../contexts/AuthContext';
 import * as authService from '../services/authService';
 
 export const useAuth = () => {
-    const { isAuthenticated, token, login, logout } = useContext(AuthContext);
+    const { isAuthenticated, login, logout } = useContext(AuthContext);
 
     const performLogin = async (credentials) => {
-        const token = await authService.login(credentials);
-        login(token);
-
+        try {
+            await authService.login(credentials);
+            login();
+        } catch (error) {
+            throw error;
+        }
     };
 
-    const performLogout = () => {
+    const performLogout = async () => {
+        await authService.logout();
         logout();
     };
 
     const performRegister = async (userData) => {
         try {
-            await authService.register(userData);  
+            await authService.register(userData);
             await performLogin({ email: userData.email, password: userData.password });
         } catch (error) {
-            throw error;  
+            throw error;
         }
-    };    
+    };
 
     return {
         isAuthenticated,
-        token,
         performLogin,
         performLogout,
         performRegister,

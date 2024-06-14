@@ -7,11 +7,16 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-// Assuming you load the configuration at the application startup and pass it where needed
 var jwtKey []byte
 
+// SetupAuth initializes the jwtKey with the given config.
 func SetupAuth(config configs.OAuthConfig) {
 	jwtKey = []byte(config.JWTSecret)
+}
+
+// GetJWTKey returns the jwtKey.
+func GetJWTKey() []byte {
+	return jwtKey
 }
 
 type Claims struct {
