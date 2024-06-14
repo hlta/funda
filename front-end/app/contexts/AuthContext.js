@@ -4,19 +4,21 @@ import { useHistory } from 'react-router-dom';
 export const AuthContext = createContext();
 
 const initialState = {
-    isAuthenticated: false,
-    token: null,
+    isAuthenticated: !!sessionStorage.getItem('token'),
+    token: sessionStorage.getItem('token'),
 };
 
 const authReducer = (state, action) => {
     switch (action.type) {
         case 'LOGIN':
+            sessionStorage.setItem('token', action.payload.token);
             return {
                 ...state,
                 isAuthenticated: true,
                 token: action.payload.token,
             };
         case 'LOGOUT':
+            sessionStorage.removeItem('token');
             return {
                 ...state,
                 isAuthenticated: false,
@@ -33,7 +35,7 @@ export const AuthProvider = ({ children }) => {
 
     const login = (token) => {
         dispatch({ type: 'LOGIN', payload: { token } });
-        history.push('/dashboard'); // Redirect to dashboard after login
+        history.push('/'); // Redirect to dashboard after login
     };
 
     const logout = () => {

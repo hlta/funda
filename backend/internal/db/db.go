@@ -21,12 +21,14 @@ func SetupDatabase(cfg configs.DatabaseConfig, log logger.Logger) (*gorm.DB, err
 	switch cfg.Type {
 	case "sqlite":
 		db, err = gorm.Open(sqlite.Open(cfg.Name), &gorm.Config{
-			Logger: gormLog,
+			TranslateError: true,
+			Logger:         gormLog,
 		})
 	case "postgres":
 		dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", cfg.Host, cfg.Username, cfg.Password, cfg.Name, cfg.Port)
 		db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
-			Logger: gormLog,
+			TranslateError: true,
+			Logger:         gormLog,
 		})
 	default:
 		err = fmt.Errorf("unsupported database type: %s", cfg.Type)
