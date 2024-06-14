@@ -34,12 +34,17 @@ type OAuthConfig struct {
 	JWTSecret string
 }
 
-// Config stores all configuration of the application.
+type LogConfig struct {
+	Level  string
+	Format string
+}
+
 type Config struct {
 	Server   ServerConfig
 	Database DatabaseConfig
 	OAuth    OAuthConfig
 	CORS     CORSConfig
+	Log      map[string]LogConfig
 }
 
 // LoadConfig reads configuration from file or environment variables.

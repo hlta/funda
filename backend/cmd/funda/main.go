@@ -15,36 +15,41 @@ import (
 )
 
 func main() {
-	log := logger.NewLogger()
-	log.Info("Loading configuration")
+	appLogger := logger.NewLogger("default")
+	appLogger.Info("Loading configuration")
+
 	config, err := configs.LoadConfig(".")
 	if err != nil {
-		log.WithField("error", err).Fatal("Error loading configuration")
+		appLogger.WithField("error", err).Fatal("Error loading configuration")
 	}
 
-	log.Info("Initialize the auth package with the JWT secret from the config")
+	appLogger.Info("Initialize the auth package with the JWT secret from the config")
 	auth.SetupAuth(config.OAuth)
 
-	log.Info("Setting up database")
-	database, err := db.SetupDatabase(config.Database, log)
+	dbLogger := logger.NewLogger("database")
+	appLogger.Info("Setting up database")
+	database, err := db.SetupDatabase(config.Database, dbLogger)
 	if err != nil {
-		log.WithField("error", err).Fatal("Failed to setup database")
+		dbLogger.WithField("error", err).Fatal("Failed to setup database")
 	}
 
-	log.Info("Auto-migrating database models")
+	appLogger.Info("Auto-migrating database models")
 	if err := database.AutoMigrate(&model.User{}); err != nil {
-		log.WithField("error", err).Fatal("Failed to auto-migrate")
+		dbLogger.WithField("error", err).Fatal("Failed to auto-migrate")
 	}
 
 	e := echo.New()
-	middleware.SetupMiddlewares(e, log, config)
+	middleware.SetupMiddlewares(e, appLogger, config)
 
+	userLogger := logger.NewLogger("userService")
 	userRepository := store.NewGormUserRepository(database)
-	userService := service.NewUserService(userRepository, log)
-	authService := service.NewAuthService(userRepository, log)
+	userService := service.NewUserService(userRepository, userLogger)
+
+	authLogger := logger.NewLogger("authService")
+	authService := service.NewAuthService(userRepository, authLogger)
 
 	api.SetupRoutes(e, userService, authService)
 
-	log.WithField("port", config.Server.Port).Info("Starting server")
+	appLogger.WithField("port", config.Server.Port).Info("Starting server")
 	e.Logger.Fatal(e.Start(":" + config.Server.Port))
 }
