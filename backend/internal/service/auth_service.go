@@ -23,20 +23,24 @@ func NewAuthService(userRepo model.UserRepository, log logger.Logger) *AuthServi
 }
 
 func (s *AuthService) Signup(user *model.User) error {
+	// Hash the password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
-		s.log.WithField("action", "hashing password").Error(err.Error())
+		s.log.WithField("action", "hashing password").WithError(err).Error("Failed to hash password")
 		return err
 	}
+
+	// Update the user password to the hashed password
 	user.Password = string(hashedPassword)
+
+	// Create the user in the repository
 	if err := s.userRepo.Create(user); err != nil {
-		if errors.Is(err, model.ErrEmailExists) {
-			return errors.New("email already exists")
-		}
-		s.log.WithField("action", "creating user").Error(err.Error())
-		return errors.New("signup failure")
+		s.log.WithField("action", "creating user").WithError(err).Error("Failed to create user")
+		return err
 	}
-	s.log.WithField("action", "user signed up").Info("User successfully registered")
+
+	// Log success
+	s.log.WithField("action", "user signed up").WithField("userID", user.ID).Info("User successfully registered")
 	return nil
 }
 
