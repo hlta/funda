@@ -30,7 +30,6 @@ const Login = () => {
         setGlobalError('');
         try {
             await performLogin(data);
-            history.push('/');
         } catch (error) {
             if (error.response && error.response.status === 401) {
                 setGlobalError('Invalid username or password.');
