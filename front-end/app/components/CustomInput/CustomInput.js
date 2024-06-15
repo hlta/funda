@@ -1,17 +1,24 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
+import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { CustomInput as RSCustomInput } from 'reactstrap';
 
-const CustomInput = (props) => {
-    const { className, ...otherProps } = props;
+const CustomInput = forwardRef(({ className, label, ...otherProps }, ref) => {
     const inputClass = classNames(className, {
-        'custom-control-empty': !props.label
+        'custom-control-empty': !label
     });
 
     return (
-        <RSCustomInput className={ inputClass } { ...otherProps } />
+        <RSCustomInput className={inputClass} label={label} innerRef={ref} {...otherProps} />
     );
-}
-CustomInput.propTypes = { ...RSCustomInput.propTypes };
+});
+
+CustomInput.displayName = 'CustomInput';
+
+CustomInput.propTypes = {
+    className: PropTypes.string,
+    label: PropTypes.node,
+    ...RSCustomInput.propTypes,
+};
 
 export { CustomInput };
