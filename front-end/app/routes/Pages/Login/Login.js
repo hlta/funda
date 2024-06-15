@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useHistory } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 
 import {
@@ -11,7 +11,6 @@ import {
     EmptyLayout,
     ThemeConsumer,
     Alert,
-    FormText,
     FormFeedback
 } from './../../../components';
 
@@ -21,17 +20,22 @@ import { FooterAuth } from "../../components/Pages/FooterAuth";
 import { useAuth } from "../../../hooks/useAuth";
 
 const Login = () => {
-    const { control, handleSubmit, formState: { errors, isSubmitting } } = useForm();
+    const { control, handleSubmit, formState: { errors, isSubmitting } } = useForm({
+        defaultValues: {
+            email: '',  
+            password: '' 
+        }
+    });
     const { performLogin } = useAuth();
     const [globalError, setGlobalError] = useState('');
-    const history = useHistory();
 
     const onSubmit = async (data) => {
         setGlobalError('');
         try {
             await performLogin(data);
         } catch (error) {
-            if (error.response && error.response.status === 401) {
+            console.log(error.response)
+            if (error.response && error.response.code === 401) {
                 setGlobalError('Invalid username or password.');
             } else {
                 setGlobalError('An unexpected error occurred. Please try again later.');
