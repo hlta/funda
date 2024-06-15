@@ -5,6 +5,8 @@ var ExtractCssChunks = require("extract-css-chunks-webpack-plugin");
 var OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 var TerserPlugin = require('terser-webpack-plugin');
 var CircularDependencyPlugin = require('circular-dependency-plugin');
+const Dotenv = require('dotenv-webpack');
+
 
 var config = require('./../config');
 
@@ -29,6 +31,10 @@ module.exports = {
         ]
     },
     plugins: [
+        new Dotenv({
+            path: './.env', // Path to .env file (this is the default)
+            safe: true, // Load '.env.example' to check for all necessary variables
+        }),
         new CircularDependencyPlugin({
             exclude: /a\.js|node_modules/,
             failOnError: true,

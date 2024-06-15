@@ -27,6 +27,8 @@
     "circular-dependency-plugin": "^5.0.2",
     "commander": "^2.20.0",
     "css-loader": "^3.1.0",
+    "dotenv": "^16.4.5",
+    "dotenv-webpack": "^8.1.0",
     "eslint": "^8.56.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-import-resolver-alias": "^1.1.2",
