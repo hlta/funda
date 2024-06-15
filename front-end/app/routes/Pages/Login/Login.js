@@ -34,7 +34,7 @@ const Login = () => {
         setGlobalError('');
         try {
             await performLogin(data);
-            history.push("/")
+            history.push('/')
         } catch (error) {
             console.log(error.response)
             if (error.response && error.response.code === 401) {

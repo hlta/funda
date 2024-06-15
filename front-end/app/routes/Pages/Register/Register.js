@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import { useAuth } from "../../../hooks/useAuth";
 
 import {
@@ -36,11 +36,13 @@ const Register = () => {
   });
   const { performRegister } = useAuth();
   const [serverError, setServerError] = useState('');
+  const history = useHistory();
 
   const handleRegistration = async (data) => {
     setServerError('');
     try {
       await performRegister(data);
+      history.push('/');
     } catch (error) {
       if (error.response && error.response.errors) {
        console.log(error.response.errors)
