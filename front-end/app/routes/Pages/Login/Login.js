@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 
 import {
@@ -28,11 +28,13 @@ const Login = () => {
     });
     const { performLogin } = useAuth();
     const [globalError, setGlobalError] = useState('');
+    const history = useHistory();
 
     const onSubmit = async (data) => {
         setGlobalError('');
         try {
             await performLogin(data);
+            history.push("/")
         } catch (error) {
             console.log(error.response)
             if (error.response && error.response.code === 401) {

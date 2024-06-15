@@ -6,12 +6,10 @@ export const useAuth = () => {
     const { isAuthenticated, login, logout } = useContext(AuthContext);
 
     const performLogin = async (credentials) => {
-        try {
-            await authService.login(credentials);
-            login();
-        } catch (error) {
-            throw error;
-        }
+
+        await authService.login(credentials);
+        login();
+        
     };
 
     const performLogout = async () => {
@@ -20,12 +18,10 @@ export const useAuth = () => {
     };
 
     const performRegister = async (userData) => {
-        try {
-            await authService.register(userData);
-            await performLogin({ email: userData.email, password: userData.password });
-        } catch (error) {
-            throw error;
-        }
+       
+        await authService.register(userData);
+        await performLogin({ email: userData.email, password: userData.password });
+       
     };
 
     return {

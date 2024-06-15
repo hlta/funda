@@ -1,5 +1,5 @@
 import React, { createContext, useReducer, useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
+import PropTypes from 'prop-types'; 
 import * as authService from '../services/authService';
 
 const initialState = {
@@ -27,7 +27,6 @@ export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
     const [state, dispatch] = useReducer(authReducer, initialState);
-    const history = useHistory();
 
     const checkAuth = async () => {
         const isAuthenticated = await authService.checkAuth();
@@ -55,4 +54,8 @@ export const AuthProvider = ({ children }) => {
             {children}
         </AuthContext.Provider>
     );
+};
+
+AuthProvider.propTypes = {
+    children: PropTypes.node.isRequired
 };
