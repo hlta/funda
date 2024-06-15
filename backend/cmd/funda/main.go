@@ -39,6 +39,7 @@ func main() {
 	}
 
 	e := echo.New()
+	appLogger.Info("Setting up middlewares")
 	middleware.SetupMiddlewares(e, appLogger, config)
 
 	userLogger := logger.NewLogger("userService")

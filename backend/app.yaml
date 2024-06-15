@@ -2,19 +2,23 @@ database:
   type: "sqlite"
   name: "funda_database.db"
 
+oauth:
+  jwtSecret: "XpByJ91SbkhngTHC8UEwCY3zdL0uijsPyTUDM4+KaVdIM2+3g3fJe+TntQLFDloFUNnIj5GswFudJcDcQz36Hw=="
+
 cors:
-  allow_origins:
-    - "http://localhost:4100" 
-  allow_methods:
+  allowOrigins:
+    - "http://localhost:4100"
+  allowMethods:
     - "GET"
     - "POST"
-    - "PUT"
     - "DELETE"
-  allow_headers:
+    - "PUT"
+  allowHeaders:
     - "Content-Type"
     - "Authorization"
     - "X-Requested-With"
-  allow_credentials: true
-  expose_headers:
+  allowCredentials: true
+  exposeHeaders:
     - "Content-Length"
-  max_age: 3600  # 1 hour
+  maxAge: 3600
+
