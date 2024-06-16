@@ -117,7 +117,6 @@ import { AuthProvider } from '../contexts/AuthContext';
 // eslint-disable-next-line no-unused-vars
 export const RoutedContent = () => {
     return (
-        <AuthProvider>
             <Switch>
                 <Redirect from="/" to="/dashboards/projects" exact />
                 
@@ -229,7 +228,6 @@ export const RoutedContent = () => {
                 { /*    404    */ }
                 <Redirect to="/error-404" />
             </Switch>
-        </AuthProvider>
     );
 };
 

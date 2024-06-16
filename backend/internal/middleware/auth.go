@@ -45,7 +45,7 @@ func OAuthMiddleware(config configs.OAuthConfig) echo.MiddlewareFunc {
 // isAuthOptional checks if the request path is excluded from authentication.
 func isAuthOptional(path string) bool {
 	switch path {
-	case "/login", "/signup", "/auth/check":
+	case "/login", "/signup", "/auth/check", "/logout":
 		return true
 	default:
 		return false
