@@ -11,7 +11,8 @@ type User struct {
 	gorm.Model
 	FirstName string
 	LastName  string
-	Email     string `gorm:"uniqueIndex"` // Email must be unique
+	Email     string `gorm:"uniqueIndex"`     // Email must be unique
+	Token     string `json:"token,omitempty"` // Add this line
 	Password  string // This should be a hashed password
 }
 

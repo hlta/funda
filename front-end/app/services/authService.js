@@ -17,9 +17,10 @@ export const login = async (credentials) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credentials),
-        credentials: 'include', // Important for sending cookies
+        credentials: 'include', 
     });
-    return handleError(response);
+    const data = await handleError(response);
+    return data.user; 
 };
 
 export const register = async (userData) => {
@@ -34,7 +35,7 @@ export const register = async (userData) => {
 export const logout = async () => {
     const response = await fetch(`${API_URL}/logout`, {
         method: 'POST',
-        credentials: 'include', // Important for sending cookies
+        credentials: 'include', 
     });
     return handleError(response);
 };
@@ -45,11 +46,12 @@ export const checkAuth = async () => {
             credentials: 'include',
         });
         if (response.ok) {
-            return true;
+            const data = await response.json();
+            return { isAuthenticated: true, user: data.user }; 
         } else {
-            return false;
+            return { isAuthenticated: false, user: null };
         }
     } catch (error) {
-        return false;
+        return { isAuthenticated: false, user: null };
     }
 };

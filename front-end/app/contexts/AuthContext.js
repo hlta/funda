@@ -4,6 +4,7 @@ import * as authService from '../services/authService';
 
 const initialState = {
     isAuthenticated: false,
+    user: null,
 };
 
 const authReducer = (state, action) => {
@@ -12,11 +13,13 @@ const authReducer = (state, action) => {
             return {
                 ...state,
                 isAuthenticated: true,
+                user: action.payload,
             };
         case 'LOGOUT':
             return {
                 ...state,
                 isAuthenticated: false,
+                user: null,
             };
         default:
             return state;
@@ -29,9 +32,9 @@ export const AuthProvider = ({ children }) => {
     const [state, dispatch] = useReducer(authReducer, initialState);
 
     const checkAuth = async () => {
-        const isAuthenticated = await authService.checkAuth();
+        const { isAuthenticated, user } = await authService.checkAuth();
         if (isAuthenticated) {
-            dispatch({ type: 'LOGIN' });
+            dispatch({ type: 'LOGIN', payload: user });
         } else {
             dispatch({ type: 'LOGOUT' });
         }
@@ -41,11 +44,13 @@ export const AuthProvider = ({ children }) => {
         checkAuth();
     }, []);
 
-    const login = () => {
-        dispatch({ type: 'LOGIN' });
+    const login = async (credentials) => {
+        const user = await authService.login(credentials);
+        dispatch({ type: 'LOGIN', payload: user });
     };
 
-    const logout = () => {
+    const logout = async () => {
+        await authService.logout();
         dispatch({ type: 'LOGOUT' });
     };
 
@@ -57,5 +62,5 @@ export const AuthProvider = ({ children }) => {
 };
 
 AuthProvider.propTypes = {
-    children: PropTypes.node.isRequired
+    children: PropTypes.node.isRequired,
 };

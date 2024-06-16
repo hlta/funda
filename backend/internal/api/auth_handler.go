@@ -71,7 +71,7 @@ func (h *AuthHandler) Login(c echo.Context) error {
 		})
 	}
 
-	token, err := h.authService.Login(loginReq.Email, loginReq.Password)
+	user, err := h.authService.Login(loginReq.Email, loginReq.Password)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, middleware.ErrorResponse{
 			Code:    http.StatusUnauthorized,
@@ -81,14 +81,18 @@ func (h *AuthHandler) Login(c echo.Context) error {
 
 	cookie := new(http.Cookie)
 	cookie.Name = "token"
-	cookie.Value = token
+	cookie.Value = user.Token
 	cookie.Expires = time.Now().Add(24 * time.Hour)
 	cookie.HttpOnly = true
 	cookie.Secure = true
+	cookie.SameSite = http.SameSiteStrictMode
 	cookie.Path = "/"
 	c.SetCookie(cookie)
 
-	return c.JSON(http.StatusOK, map[string]string{"message": "Login successful"})
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "Login successful",
+		"user":    user,
+	})
 }
 
 func (h *AuthHandler) Logout(c echo.Context) error {
@@ -98,6 +102,7 @@ func (h *AuthHandler) Logout(c echo.Context) error {
 	cookie.Expires = time.Now().Add(-time.Hour)
 	cookie.HttpOnly = true
 	cookie.Secure = true
+	cookie.SameSite = http.SameSiteStrictMode
 	cookie.Path = "/"
 	c.SetCookie(cookie)
 
@@ -114,7 +119,7 @@ func (h *AuthHandler) CheckAuth(c echo.Context) error {
 	}
 
 	token := cookie.Value
-	_, err = h.authService.VerifyToken(token)
+	user, err := h.authService.VerifyToken(token)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, middleware.ErrorResponse{
 			Code:    http.StatusUnauthorized,
@@ -122,5 +127,5 @@ func (h *AuthHandler) CheckAuth(c echo.Context) error {
 		})
 	}
 
-	return c.NoContent(http.StatusOK)
+	return c.JSON(http.StatusOK, user)
 }

@@ -44,29 +44,30 @@ func (s *AuthService) Signup(user *model.User) error {
 	return nil
 }
 
-func (s *AuthService) Login(email, password string) (string, error) {
+func (s *AuthService) Login(email, password string) (*model.User, error) {
 	user, err := s.userRepo.RetrieveByEmail(email)
 	if err != nil {
 		s.log.WithField("action", "retrieving user").Error(err.Error())
-		return "", err
+		return nil, err
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
 		s.log.WithField("action", "password verification").Error("Invalid credentials")
-		return "", err
+		return nil, err
 	}
 
 	token, err := auth.GenerateToken(user.ID)
 	if err != nil {
 		s.log.WithField("action", "generating token").Error(err.Error())
-		return "", err
+		return nil, err
 	}
 
+	user.Token = token
 	s.log.WithField("action", "user logged in").Info("Token successfully generated")
-	return token, nil
+	return user, nil
 }
 
-func (s *AuthService) VerifyToken(tokenString string) (*jwt.Token, error) {
+func (s *AuthService) VerifyToken(tokenString string) (*model.User, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &auth.Claims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("invalid signing method")
@@ -82,5 +83,15 @@ func (s *AuthService) VerifyToken(tokenString string) (*jwt.Token, error) {
 		return nil, errors.New("invalid token")
 	}
 
-	return token, nil
+	claims, ok := token.Claims.(*auth.Claims)
+	if !ok {
+		return nil, errors.New("invalid claims")
+	}
+
+	user, err := s.userRepo.RetrieveByID(claims.UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }
