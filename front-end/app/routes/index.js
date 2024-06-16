@@ -110,7 +110,6 @@ import { DefaultSidebar } from './../layout/components/DefaultSidebar';
 import { SidebarANavbar } from './../layout/components/SidebarANavbar';
 import { SidebarASidebar } from './../layout/components/SidebarASidebar';
 
-import { AuthProvider } from '../contexts/AuthContext';
 
 
 //------ Route Definitions --------

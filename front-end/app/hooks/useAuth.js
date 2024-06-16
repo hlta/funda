@@ -3,7 +3,7 @@ import { AuthContext } from '../contexts/AuthContext';
 import * as authService from '../services/authService';
 
 export const useAuth = () => {
-    const { isAuthenticated, user, login, logout } = useContext(AuthContext);
+    const { loading, isAuthenticated, user, login, logout } = useContext(AuthContext);
 
     const performLogin = async (credentials) => {
         const user = await authService.login(credentials);
@@ -21,6 +21,7 @@ export const useAuth = () => {
     };
 
     return {
+        loading,
         isAuthenticated,
         user,
         performLogin,
