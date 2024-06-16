@@ -11,9 +11,9 @@ type User struct {
 	gorm.Model
 	FirstName string
 	LastName  string
-	Email     string `gorm:"uniqueIndex"`     // Email must be unique
-	Token     string `json:"token,omitempty"` // Add this line
-	Password  string // This should be a hashed password
+	Email     string `gorm:"uniqueIndex"`
+	Token     string `json:"Token,omitempty"`
+	Password  string `json:"-"`
 }
 
 // UserRepository is the interface that defines methods to interact with the User storage.

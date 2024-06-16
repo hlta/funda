@@ -4,6 +4,7 @@ import (
 	"errors"
 	"funda/internal/middleware"
 	"funda/internal/model"
+	"funda/internal/response"
 	"funda/internal/service"
 	"net/http"
 	"time"
@@ -56,7 +57,9 @@ func (h *AuthHandler) Signup(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusCreated, map[string]string{"message": "User successfully registered"})
+	return c.JSON(http.StatusCreated, response.GenericResponse{
+		Message: "User successfully registered",
+	})
 }
 
 func (h *AuthHandler) Login(c echo.Context) error {
@@ -89,9 +92,16 @@ func (h *AuthHandler) Login(c echo.Context) error {
 	cookie.Path = "/"
 	c.SetCookie(cookie)
 
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"message": "Login successful",
-		"user":    user,
+	userResp := &response.UserResponse{
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Email:     user.Email,
+		Token:     user.Token,
+	}
+
+	return c.JSON(http.StatusOK, response.GenericResponse{
+		Message: "Login successful",
+		Data:    userResp,
 	})
 }
 
@@ -106,7 +116,9 @@ func (h *AuthHandler) Logout(c echo.Context) error {
 	cookie.Path = "/"
 	c.SetCookie(cookie)
 
-	return c.JSON(http.StatusOK, map[string]string{"message": "Logout successful"})
+	return c.JSON(http.StatusOK, response.GenericResponse{
+		Message: "Logout successful",
+	})
 }
 
 func (h *AuthHandler) CheckAuth(c echo.Context) error {
@@ -127,5 +139,15 @@ func (h *AuthHandler) CheckAuth(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, user)
+	userResp := &response.UserResponse{
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Email:     user.Email,
+		Token:     user.Token,
+	}
+
+	return c.JSON(http.StatusOK, response.GenericResponse{
+		Message: "Authenticated",
+		Data:    userResp,
+	})
 }

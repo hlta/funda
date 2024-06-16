@@ -1,5 +1,5 @@
 import React, { createContext, useReducer, useEffect } from 'react';
-import PropTypes from 'prop-types'; 
+import PropTypes from 'prop-types';
 import * as authService from '../services/authService';
 
 const initialState = {
@@ -44,13 +44,11 @@ export const AuthProvider = ({ children }) => {
         checkAuth();
     }, []);
 
-    const login = async (credentials) => {
-        const user = await authService.login(credentials);
+    const login = async (user) => {
         dispatch({ type: 'LOGIN', payload: user });
     };
 
     const logout = async () => {
-        await authService.logout();
         dispatch({ type: 'LOGOUT' });
     };
 
