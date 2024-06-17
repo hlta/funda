@@ -13,7 +13,7 @@ type User struct {
 	LastName  string
 	Email     string `gorm:"uniqueIndex"`
 	Token     string `json:"Token,omitempty"`
-	Password  string `json:"-"`
+	Password  string
 }
 
 // UserRepository is the interface that defines methods to interact with the User storage.
