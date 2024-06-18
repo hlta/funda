@@ -1,6 +1,5 @@
 import React from "react";
-import { faker } from "@faker-js/faker";
-import { Link, useHistory } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Sidebar, UncontrolledButtonDropdown, Avatar, AvatarAddOn, DropdownToggle, DropdownMenu, DropdownItem } from "./../../../components";
 import { randomAvatar } from "./../../../utilities";
 import { useAuth } from "../../../hooks/useAuth";
@@ -8,13 +7,13 @@ import { useAuth } from "../../../hooks/useAuth";
 const avatarImg = randomAvatar();
 
 const SidebarTopA = () => {
-  const { performLogout } = useAuth();
-  const history = useHistory();
+  const { performLogout, user } = useAuth();
 
   const handleLogout = async () => {
     await performLogout();
-    history.push('/login'); 
   };
+
+  const fullName = user ? `${user.firstName} ${user.lastName}` : 'User';
 
   return (
     <React.Fragment>
@@ -47,12 +46,12 @@ const SidebarTopA = () => {
               color="link"
               className="pl-0 pb-0 btn-profile sidebar__link"
             >
-              {faker.person.firstName()} {faker.person.lastName()}
+              {fullName}
               <i className="fa fa-angle-down ml-2"></i>
             </DropdownToggle>
             <DropdownMenu persist>
               <DropdownItem header>
-                {faker.person.firstName()} {faker.person.lastName()}
+                {fullName}
               </DropdownItem>
               <DropdownItem divider />
               <DropdownItem tag={Link} to="/apps/profile-details">
@@ -71,9 +70,6 @@ const SidebarTopA = () => {
               </DropdownItem>
             </DropdownMenu>
           </UncontrolledButtonDropdown>
-          <div className="small sidebar__link--muted">
-            {faker.person.jobTitle()}
-          </div>
         </Sidebar.Section>
       </Sidebar.HideSlim>
       {/* END: Sidebar Default */}
