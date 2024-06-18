@@ -12,6 +12,19 @@ permissions:
   - name: "Manage Financial Settings"
 
 roles:
+  - name: "Admin"
+    permissions:
+      - "Manage Users"
+      - "View Reports"
+      - "Manage Invoices"
+      - "Manage Bills"
+      - "Manage Contacts"
+      - "Manage Bank Accounts"
+      - "View Payroll"
+      - "Manage Payroll"
+      - "Manage Inventory"
+      - "View Financial Settings"
+      - "Manage Financial Settings"
   - name: "Advisor"
     permissions:
       - "Manage Users"

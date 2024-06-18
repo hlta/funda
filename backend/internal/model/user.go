@@ -10,9 +10,9 @@ import (
 type User struct {
 	gorm.Model
 	FirstName         string
-	LastName          string
+	LastName          string `json:"LastName,omitempty"`
 	Email             string `gorm:"uniqueIndex"`
-	Token             string `json:"Token,omitempty"`
+	Token             string `json:"Token,omitempty" gorm:"-"`
 	Password          string
 	UserOrganizations []UserOrganization
 }
