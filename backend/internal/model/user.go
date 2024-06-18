@@ -9,11 +9,12 @@ import (
 // User represents the user entity.
 type User struct {
 	gorm.Model
-	FirstName string
-	LastName  string
-	Email     string `gorm:"uniqueIndex"`
-	Token     string `json:"Token,omitempty"`
-	Password  string
+	FirstName         string
+	LastName          string
+	Email             string `gorm:"uniqueIndex"`
+	Token             string `json:"Token,omitempty"`
+	Password          string
+	UserOrganizations []UserOrganization
 }
 
 // UserRepository is the interface that defines methods to interact with the User storage.
@@ -23,8 +24,6 @@ type UserRepository interface {
 	RetrieveByEmail(email string) (*User, error) // Retrieve a user by email
 	Update(user *User) error                     // Update a user
 	Delete(id uint) error                        // Delete a user by ID
-	// List can be added if listing users is required
-	// List(offset, limit int) ([]*User, error)
 }
 
 // Predefined errors to handle specific scenarios

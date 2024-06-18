@@ -5,6 +5,7 @@ import (
 	"funda/internal/api"
 	"funda/internal/auth"
 	"funda/internal/db"
+	"funda/internal/initializer"
 	"funda/internal/logger"
 	"funda/internal/middleware"
 	"funda/internal/model"
@@ -23,6 +24,11 @@ func main() {
 		appLogger.WithField("error", err).Fatal("Error loading configuration")
 	}
 
+	rolesPermissionsConfig, err := configs.LoadRolesPermissionsConfig(".")
+	if err != nil {
+		appLogger.WithField("error", err).Fatal("Error loading roles and permissions configuration")
+	}
+
 	appLogger.Info("Initialize the auth package with the JWT secret from the config")
 	auth.SetupAuth(config.OAuth)
 
@@ -34,7 +40,7 @@ func main() {
 	}
 
 	appLogger.Info("Auto-migrating database models")
-	if err := database.AutoMigrate(&model.User{}); err != nil {
+	if err := database.AutoMigrate(&model.User{}, &model.Organization{}, &model.Role{}, &model.Permission{}, &model.UserOrganization{}, &model.RolePermission{}); err != nil {
 		dbLogger.WithField("error", err).Fatal("Failed to auto-migrate")
 	}
 
@@ -46,8 +52,15 @@ func main() {
 	userRepository := store.NewGormUserRepository(database)
 	userService := service.NewUserService(userRepository, userLogger)
 
+	orgRepository := store.NewGormOrganizationRepository(database)
+	roleRepository := store.NewGormRoleRepository(database)
+	userOrgRepository := store.NewGormUserOrganizationRepository(database)
+
 	authLogger := logger.NewLogger("authService")
-	authService := service.NewAuthService(userRepository, authLogger)
+	authService := service.NewAuthService(userService, orgRepository, roleRepository, userOrgRepository, authLogger)
+
+	// Load predefined roles and permissions
+	initializer.LoadPredefinedRolesAndPermissions(database, rolesPermissionsConfig, userLogger)
 
 	api.SetupRoutes(e, userService, authService)
 

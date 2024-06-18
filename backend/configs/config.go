@@ -39,6 +39,20 @@ type LogConfig struct {
 	Format string
 }
 
+type PermissionConfig struct {
+	Name string
+}
+
+type RoleConfig struct {
+	Name        string
+	Permissions []string
+}
+
+type RolesPermissionsConfig struct {
+	Permissions []PermissionConfig
+	Roles       []RoleConfig
+}
+
 type Config struct {
 	Server   ServerConfig
 	Database DatabaseConfig
@@ -70,5 +84,18 @@ func LoadConfig(path string) (config Config, err error) {
 		log.Printf("Error reading config file, %s", err)
 	}
 	err = viper.Unmarshal(&config)
+	return
+}
+
+// LoadRolesPermissionsConfig reads roles and permissions configuration from a separate file.
+func LoadRolesPermissionsConfig(path string) (rolesPermissionsConfig RolesPermissionsConfig, err error) {
+	viper.SetConfigFile(path + "/roles_permissions.yaml")
+	viper.SetConfigType("yaml")
+
+	err = viper.ReadInConfig()
+	if err != nil {
+		log.Printf("Error reading roles and permissions config file, %s", err)
+	}
+	err = viper.Unmarshal(&rolesPermissionsConfig)
 	return
 }

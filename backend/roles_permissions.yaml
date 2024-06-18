@@ -1,0 +1,47 @@
+permissions:
+  - name: "Manage Users"
+  - name: "View Reports"
+  - name: "Manage Invoices"
+  - name: "Manage Bills"
+  - name: "Manage Contacts"
+  - name: "Manage Bank Accounts"
+  - name: "View Payroll"
+  - name: "Manage Payroll"
+  - name: "Manage Inventory"
+  - name: "View Financial Settings"
+  - name: "Manage Financial Settings"
+
+roles:
+  - name: "Advisor"
+    permissions:
+      - "Manage Users"
+      - "View Reports"
+      - "Manage Invoices"
+      - "Manage Bills"
+      - "Manage Contacts"
+      - "Manage Bank Accounts"
+      - "View Payroll"
+      - "Manage Payroll"
+      - "Manage Inventory"
+      - "View Financial Settings"
+      - "Manage Financial Settings"
+  - name: "Standard"
+    permissions:
+      - "View Reports"
+      - "Manage Invoices"
+      - "Manage Bills"
+      - "Manage Contacts"
+      - "Manage Bank Accounts"
+      - "Manage Inventory"
+  - name: "Invoice Only"
+    permissions:
+      - "Manage Invoices"
+      - "Manage Contacts"
+  - name: "Read Only"
+    permissions:
+      - "View Reports"
+      - "View Payroll"
+  - name: "Cashbook Client"
+    permissions:
+      - "View Reports"
+      - "Manage Bank Accounts"

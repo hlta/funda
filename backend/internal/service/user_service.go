@@ -21,6 +21,7 @@ func NewUserService(repo model.UserRepository, log logger.Logger) *UserService {
 
 // CreateUser handles the creation of a new user.
 func (s *UserService) CreateUser(user *model.User) error {
+	s.log.WithField("action", "creating user").Info("Attempting to create user")
 	if err := s.repo.Create(user); err != nil {
 		s.log.WithField("action", "creating user").Error(err.Error())
 		return err
@@ -31,6 +32,7 @@ func (s *UserService) CreateUser(user *model.User) error {
 
 // GetUserByID retrieves a user by their ID.
 func (s *UserService) GetUserByID(id uint) (*model.User, error) {
+	s.log.WithField("action", "retrieving user by ID").Info("Attempting to retrieve user")
 	user, err := s.repo.RetrieveByID(id)
 	if err != nil {
 		s.log.WithField("action", "retrieving user by ID").Error(err.Error())
@@ -42,6 +44,7 @@ func (s *UserService) GetUserByID(id uint) (*model.User, error) {
 
 // GetUserByEmail retrieves a user by their email.
 func (s *UserService) GetUserByEmail(email string) (*model.User, error) {
+	s.log.WithField("action", "retrieving user by email").Info("Attempting to retrieve user")
 	user, err := s.repo.RetrieveByEmail(email)
 	if err != nil {
 		s.log.WithField("action", "retrieving user by email").Error(err.Error())
@@ -53,6 +56,7 @@ func (s *UserService) GetUserByEmail(email string) (*model.User, error) {
 
 // UpdateUser handles updates to an existing user.
 func (s *UserService) UpdateUser(user *model.User) error {
+	s.log.WithField("action", "updating user").Info("Attempting to update user")
 	if err := s.repo.Update(user); err != nil {
 		s.log.WithField("action", "updating user").Error(err.Error())
 		return err
@@ -63,6 +67,7 @@ func (s *UserService) UpdateUser(user *model.User) error {
 
 // DeleteUser removes a user by their ID.
 func (s *UserService) DeleteUser(id uint) error {
+	s.log.WithField("action", "deleting user").Info("Attempting to delete user")
 	if err := s.repo.Delete(id); err != nil {
 		s.log.WithField("action", "deleting user").Error(err.Error())
 		return err
