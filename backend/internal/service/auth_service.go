@@ -94,7 +94,7 @@ func (s *AuthService) Login(email, password string) (*model.User, error) {
 	return user, nil
 }
 
-func (s *AuthService) VerifyToken(tokenString string) (*model.User, error) {
+func (s *AuthService) VerifyToken(tokenString string) (*model.User, []string, []string, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &auth.Claims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("invalid signing method")
@@ -103,24 +103,24 @@ func (s *AuthService) VerifyToken(tokenString string) (*model.User, error) {
 	})
 
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, err
 	}
 
 	if !token.Valid {
-		return nil, errors.New("invalid token")
+		return nil, nil, nil, errors.New("invalid token")
 	}
 
 	claims, ok := token.Claims.(*auth.Claims)
 	if !ok {
-		return nil, errors.New("invalid claims")
+		return nil, nil, nil, errors.New("invalid claims")
 	}
 
 	user, err := s.userService.GetUserByID(claims.UserID)
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, err
 	}
 
-	return user, nil
+	return user, claims.Roles, claims.Permissions, nil
 }
 
 func (s *AuthService) GetUserOrganizations(userID uint) ([]model.UserOrganization, error) {
@@ -171,7 +171,6 @@ func (s *AuthService) SwitchOrganization(user *model.User, orgID uint) (string, 
 		return "", nil, nil, err
 	}
 
-	// Extract roles and permissions from the new token
 	token, err := jwt.ParseWithClaims(newToken, &auth.Claims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("invalid signing method")

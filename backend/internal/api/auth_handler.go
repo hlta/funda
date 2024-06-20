@@ -141,7 +141,7 @@ func (h *AuthHandler) CheckAuth(c echo.Context) error {
 	}
 
 	token := cookie.Value
-	user, err := h.authService.VerifyToken(token)
+	user, roles, permissions, err := h.authService.VerifyToken(token)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, middleware.ErrorResponse{
 			Code:    http.StatusUnauthorized,
@@ -158,7 +158,11 @@ func (h *AuthHandler) CheckAuth(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response.GenericResponse{
 		Message: "Authenticated",
-		Data:    userResp,
+		Data: map[string]interface{}{
+			"user":        userResp,
+			"roles":       roles,
+			"permissions": permissions,
+		},
 	})
 }
 
@@ -172,7 +176,7 @@ func (h *AuthHandler) GetUserOrganizations(c echo.Context) error {
 	}
 
 	token := cookie.Value
-	user, err := h.authService.VerifyToken(token)
+	user, _, _, err := h.authService.VerifyToken(token)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, middleware.ErrorResponse{
 			Code:    http.StatusUnauthorized,
@@ -204,7 +208,7 @@ func (h *AuthHandler) SwitchOrganization(c echo.Context) error {
 	}
 
 	token := cookie.Value
-	user, err := h.authService.VerifyToken(token)
+	user, _, _, err := h.authService.VerifyToken(token)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, middleware.ErrorResponse{
 			Code:    http.StatusUnauthorized,
