@@ -5,12 +5,11 @@ import * as authService from '../services/authService';
 import { LOGIN_ROUTE } from '../constants/routes';
 
 export const useAuth = () => {
-    const { loading, isAuthenticated, user, login, logout } = useContext(AuthContext);
+    const { loading, isAuthenticated, user, login, logout, switchOrganization } = useContext(AuthContext);
     const history = useHistory();
 
     const performLogin = async (credentials) => {
-        const user = await authService.login(credentials);
-        login(user);
+        await login(credentials);
     };
 
     const performLogout = async () => {
@@ -22,6 +21,11 @@ export const useAuth = () => {
     const performRegister = async (userData) => {
         await authService.register(userData);
         await performLogin({ email: userData.email, password: userData.password });
+    
+    };
+
+    const switchOrg = async (orgId) => {
+        await switchOrganization(orgId);
     };
 
     return {
@@ -31,5 +35,6 @@ export const useAuth = () => {
         performLogin,
         performLogout,
         performRegister,
+        switchOrg,
     };
 };

@@ -17,8 +17,8 @@ const authReducer = (state, action) => {
         case 'LOGIN':
             return {
                 ...state,
-                isAuthenticated: !!action.payload.user, 
-                user: action.payload.user || null, 
+                isAuthenticated: !!action.payload.user,
+                user: action.payload.user || null,
                 roles: action.payload.roles || [],
                 permissions: action.payload.permissions || [],
                 loading: false,
@@ -50,6 +50,7 @@ const authReducer = (state, action) => {
                 selectedOrg: action.payload.orgId,
                 roles: action.payload.roles || [],
                 permissions: action.payload.permissions || [],
+                loading: false,
             };
         default:
             return state;
@@ -78,21 +79,41 @@ export const AuthProvider = ({ children }) => {
         checkAuth();
     }, []);
 
-    const login = async (user) => {
-        dispatch({ type: 'LOGIN', payload: user });
-        const organizations = await authService.getUserOrganizations();
-        dispatch({ type: 'SET_ORGANIZATIONS', payload: organizations });
+    const login = async (credentials) => {
+        dispatch({ type: 'SET_LOADING', payload: true });
+        try {
+            const user = await authService.login(credentials);
+            if (user) {
+                dispatch({ type: 'LOGIN', payload: { user } });
+                const organizations = await authService.getUserOrganizations();
+                dispatch({ type: 'SET_ORGANIZATIONS', payload: organizations });
+            } else {
+                dispatch({ type: 'SET_LOADING', payload: false });
+            }
+        } catch (error) {
+            dispatch({ type: 'SET_LOADING', payload: false });
+            throw error;
+        }
     };
 
     const logout = async () => {
+        dispatch({ type: 'SET_LOADING', payload: true });
+        await authService.logout();
         dispatch({ type: 'LOGOUT' });
     };
 
     const switchOrganization = async (orgId) => {
-        const {  roles, permissions } = await authService.switchOrganization(orgId);
-        dispatch({ type: 'SWITCH_ORGANIZATION', payload: { orgId, roles, permissions } });
-        const { user } = await authService.checkAuth(); 
-        dispatch({ type: 'LOGIN', payload: { user, roles, permissions } });
+        dispatch({ type: 'SET_LOADING', payload: true });
+        try {
+            const {  roles, permissions } = await authService.switchOrganization(orgId);
+            dispatch({ type: 'SWITCH_ORGANIZATION', payload: { orgId, roles, permissions } });
+            const { user } = await authService.checkAuth(); 
+            dispatch({ type: 'LOGIN', payload: { user, roles, permissions } });
+        } catch (error) {
+            console.error('Switch organization error:', error);
+            dispatch({ type: 'SET_LOADING', payload: false });
+            throw error;
+        }
     };
 
     return (

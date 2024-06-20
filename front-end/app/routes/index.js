@@ -119,96 +119,96 @@ export const RoutedContent = () => {
             <Switch>
                 <Redirect from="/" to="/dashboards/projects" exact />
                 
-                <ProtectedRoute path="/dashboards/analytics" exact component={Analytics} />
-                <ProtectedRoute path="/dashboards/projects" exact component={ProjectsDashboard} />
-                <ProtectedRoute path="/dashboards/system" exact component={System} />
-                <ProtectedRoute path="/dashboards/monitor" exact component={Monitor} />
-                <ProtectedRoute path="/dashboards/financial" exact component={Financial} />
-                <ProtectedRoute path="/dashboards/stock" exact component={Stock} />
-                <ProtectedRoute path="/dashboards/reports" exact component={Reports} />
+                <ProtectedRoute requiredPermissions={['View Reports']} path="/dashboards/analytics" exact component={Analytics} />
+                <ProtectedRoute requiredPermissions={['View Reports']} path="/dashboards/projects" exact component={ProjectsDashboard} />
+                <ProtectedRoute requiredPermissions={['View Reports']} path="/dashboards/system" exact component={System} />
+                <ProtectedRoute requiredPermissions={['View Reports']} path="/dashboards/monitor" exact component={Monitor} />
+                <ProtectedRoute requiredPermissions={['View Reports']} path="/dashboards/financial" exact component={Financial} />
+                <ProtectedRoute requiredPermissions={['View Reports']} path="/dashboards/stock" exact component={Stock} />
+                <ProtectedRoute requiredPermissions={['View Reports']} path="/dashboards/reports" exact component={Reports} />
 
-                <ProtectedRoute path='/widgets' exact component={Widgets} />
+                <ProtectedRoute requiredPermissions={['View Reports']} path='/widgets' exact component={Widgets} />
                 
                 { /*    Cards Routes     */ }
-                <ProtectedRoute path='/cards/cards' exact component={Cards} />
-                <ProtectedRoute path='/cards/cardsheaders' exact component={CardsHeaders} />
+                <ProtectedRoute requiredPermissions={['View Reports']} path='/cards/cards' exact component={Cards} />
+                <ProtectedRoute requiredPermissions={['View Reports']} path='/cards/cardsheaders' exact component={CardsHeaders} />
                 
                 { /*    Layouts     */ }
-                <ProtectedRoute path='/layouts/navbar' component={NavbarOnly} />
-                <ProtectedRoute path='/layouts/sidebar' component={SidebarDefault} />
-                <ProtectedRoute path='/layouts/sidebar-a' component={SidebarA} />
-                <ProtectedRoute path="/layouts/sidebar-with-navbar" component={SidebarWithNavbar} />
-                <ProtectedRoute path='/layouts/dnd-layout' component={DragAndDropLayout} />
+                <ProtectedRoute requiredPermissions={['View Reports']} path='/layouts/navbar' component={NavbarOnly} />
+                <ProtectedRoute requiredPermissions={['View Reports']} path='/layouts/sidebar' component={SidebarDefault} />
+                <ProtectedRoute requiredPermissions={['View Reports']} path='/layouts/sidebar-a' component={SidebarA} />
+                <ProtectedRoute requiredPermissions={['View Reports']} path="/layouts/sidebar-with-navbar" component={SidebarWithNavbar} />
+                <ProtectedRoute requiredPermissions={['View Reports']} path='/layouts/dnd-layout' component={DragAndDropLayout} />
 
                 { /*    Interface Routes   */ }
-                <ProtectedRoute component={ Accordions } path="/interface/accordions" />
-                <ProtectedRoute component={ Alerts } path="/interface/alerts" />
-                <ProtectedRoute component={ Avatars } path="/interface/avatars" />
-                <ProtectedRoute component={ BadgesLabels } path="/interface/badges-and-labels" />
-                <ProtectedRoute component={ Breadcrumbs } path="/interface/breadcrumbs" />
-                <ProtectedRoute component={ Buttons } path="/interface/buttons" />
-                <ProtectedRoute component={ Colors } path="/interface/colors" />
-                <ProtectedRoute component={ Dropdowns } path="/interface/dropdowns" />
-                <ProtectedRoute component={ Images } path="/interface/images" />
-                <ProtectedRoute component={ ListGroups } path="/interface/list-groups" />
-                <ProtectedRoute component={ MediaObjects } path="/interface/media-objects" />
-                <ProtectedRoute component={ Modals } path="/interface/modals" />
-                <ProtectedRoute component={ Navbars } path="/interface/navbars" />
-                <ProtectedRoute component={ Paginations } path="/interface/paginations" />
-                <ProtectedRoute component={ ProgressBars } path="/interface/progress-bars" />
-                <ProtectedRoute component={ TabsPills } path="/interface/tabs-pills" />
-                <ProtectedRoute component={ TooltipPopovers } path="/interface/tooltips-and-popovers" />
-                <ProtectedRoute component={ Typography } path="/interface/typography" />
-                <ProtectedRoute component={ Notifications } path="/interface/notifications" />
-                <ProtectedRoute component={ CropImage } path="/interface/crop-image" />
-                <ProtectedRoute component={ DragAndDropElements } path="/interface/drag-and-drop-elements" />
-                <ProtectedRoute component={ Calendar } path="/interface/calendar" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ Accordions } path="/interface/accordions" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ Alerts } path="/interface/alerts" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ Avatars } path="/interface/avatars" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ BadgesLabels } path="/interface/badges-and-labels" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ Breadcrumbs } path="/interface/breadcrumbs" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ Buttons } path="/interface/buttons" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ Colors } path="/interface/colors" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ Dropdowns } path="/interface/dropdowns" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ Images } path="/interface/images" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ ListGroups } path="/interface/list-groups" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ MediaObjects } path="/interface/media-objects" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ Modals } path="/interface/modals" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ Navbars } path="/interface/navbars" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ Paginations } path="/interface/paginations" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ ProgressBars } path="/interface/progress-bars" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ TabsPills } path="/interface/tabs-pills" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ TooltipPopovers } path="/interface/tooltips-and-popovers" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ Typography } path="/interface/typography" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ Notifications } path="/interface/notifications" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ CropImage } path="/interface/crop-image" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ DragAndDropElements } path="/interface/drag-and-drop-elements" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ Calendar } path="/interface/calendar" />
 
                 { /*    Forms Routes    */ }
-                <ProtectedRoute component={ Forms } path="/forms/forms" />
-                <ProtectedRoute component={ FormsLayouts } path="/forms/forms-layouts" />
-                <ProtectedRoute component={ InputGroups } path="/forms/input-groups" />
-                <ProtectedRoute component={ Wizard } path="/forms/wizard" />
-                <ProtectedRoute component={ TextMask } path="/forms/text-mask" />
-                <ProtectedRoute component={ Typeahead } path="/forms/typeahead" />
-                <ProtectedRoute component={ Toggles } path="/forms/toggles" />
-                <ProtectedRoute component={ Editor } path="/forms/editor" />
-                <ProtectedRoute component={ DatePicker } path="/forms/date-picker" />
-                <ProtectedRoute component={ Dropzone } path="/forms/dropzone" />
-                <ProtectedRoute component={ Sliders } path="/forms/sliders" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ Forms } path="/forms/forms" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ FormsLayouts } path="/forms/forms-layouts" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ InputGroups } path="/forms/input-groups" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ Wizard } path="/forms/wizard" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ TextMask } path="/forms/text-mask" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ Typeahead } path="/forms/typeahead" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ Toggles } path="/forms/toggles" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ Editor } path="/forms/editor" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ DatePicker } path="/forms/date-picker" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ Dropzone } path="/forms/dropzone" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ Sliders } path="/forms/sliders" />
                 
                 { /*    Graphs Routes   */ }
-                <ProtectedRoute component={ ReCharts } path="/graphs/re-charts" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ ReCharts } path="/graphs/re-charts" />
 
                 { /*    Tables Routes   */ }
-                <ProtectedRoute component={ Tables } path="/tables/tables" />
-                <ProtectedRoute component={ ExtendedTable } path="/tables/extended-table" />
-                <ProtectedRoute component={ AgGrid } path="/tables/ag-grid" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ Tables } path="/tables/tables" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ ExtendedTable } path="/tables/extended-table" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ AgGrid } path="/tables/ag-grid" />
 
                 { /*    Apps Routes     */ }
-                <ProtectedRoute component={ AccountEdit } path="/apps/account-edit" />
-                <ProtectedRoute component={ BillingEdit } path="/apps/billing-edit" />
-                <ProtectedRoute component={ Chat } path="/apps/chat" />
-                <ProtectedRoute component={ Clients } path="/apps/clients" />
-                <ProtectedRoute component={ EmailDetails } path="/apps/email-details" />
-                <ProtectedRoute component={ Files } path="/apps/files/:type"/>
-                <ProtectedRoute component={ GalleryGrid } path="/apps/gallery-grid" />
-                <ProtectedRoute component={ GalleryTable } path="/apps/gallery-table" />
-                <ProtectedRoute component={ ImagesResults } path="/apps/images-results" />
-                <ProtectedRoute component={ Inbox } path="/apps/inbox" />
-                <ProtectedRoute component={ NewEmail } path="/apps/new-email" />
-                <ProtectedRoute component={ ProfileDetails } path="/apps/profile-details" />
-                <ProtectedRoute component={ ProfileEdit } path="/apps/profile-edit" />
-                <ProtectedRoute component={ Projects } path="/apps/projects/:type" />
-                <ProtectedRoute component={ SearchResults } path="/apps/search-results" />
-                <ProtectedRoute component={ SessionsEdit } path="/apps/sessions-edit" />
-                <ProtectedRoute component={ SettingsEdit } path="/apps/settings-edit" />
-                <ProtectedRoute component={ Tasks } path="/apps/tasks/:type" />
-                <ProtectedRoute component={ TasksDetails } path="/apps/task-details" />
-                <ProtectedRoute component={ TasksKanban } path="/apps/tasks-kanban" />
-                <ProtectedRoute component={ Users } path="/apps/users/:type" />
-                <ProtectedRoute component={ UsersResults } path="/apps/users-results" />
-                <ProtectedRoute component={ VideosResults } path="/apps/videos-results" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ AccountEdit } path="/apps/account-edit" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ BillingEdit } path="/apps/billing-edit" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ Chat } path="/apps/chat" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ Clients } path="/apps/clients" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ EmailDetails } path="/apps/email-details" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ Files } path="/apps/files/:type"/>
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ GalleryGrid } path="/apps/gallery-grid" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ GalleryTable } path="/apps/gallery-table" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ ImagesResults } path="/apps/images-results" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ Inbox } path="/apps/inbox" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ NewEmail } path="/apps/new-email" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ ProfileDetails } path="/apps/profile-details" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ ProfileEdit } path="/apps/profile-edit" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ Projects } path="/apps/projects/:type" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ SearchResults } path="/apps/search-results" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ SessionsEdit } path="/apps/sessions-edit" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ SettingsEdit } path="/apps/settings-edit" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ Tasks } path="/apps/tasks/:type" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ TasksDetails } path="/apps/task-details" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ TasksKanban } path="/apps/tasks-kanban" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ Users } path="/apps/users/:type" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ UsersResults } path="/apps/users-results" />
+                <ProtectedRoute requiredPermissions={['View Reports']} component={ VideosResults } path="/apps/videos-results" />
 
                 { /*    Pages Routes    */ }
                 <Route component={ ComingSoon } path="/pages/coming-soon" />
@@ -222,7 +222,7 @@ export const RoutedContent = () => {
                 <Route component={ Success } path="/pages/success" />
                 <Route component={ Timeline } path="/pages/timeline" />
 
-                <ProtectedRoute path='/icons' exact component={Icons} />
+                <ProtectedRoute requiredPermissions={['View Reports']} path='/icons' exact component={Icons} />
 
                 { /*    404    */ }
                 <Redirect to="/error-404" />

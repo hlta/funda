@@ -20,7 +20,7 @@ export const login = async (credentials) => {
         credentials: 'include', 
     });
     const data = await handleError(response);
-    return data.user; 
+    return data.data; 
 };
 
 export const register = async (userData) => {
@@ -35,7 +35,7 @@ export const register = async (userData) => {
 export const logout = async () => {
     const response = await fetch(`${API_URL}/logout`, {
         method: 'POST',
-        credentials: 'include', // Important for sending cookies
+        credentials: 'include',
     });
     return handleError(response);
 };
