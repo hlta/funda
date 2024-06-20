@@ -17,10 +17,10 @@ const authReducer = (state, action) => {
         case 'LOGIN':
             return {
                 ...state,
-                isAuthenticated: true,
-                user: action.payload.user,
-                roles: action.payload.roles,
-                permissions: action.payload.permissions,
+                isAuthenticated: !!action.payload.user, 
+                user: action.payload.user || null, 
+                roles: action.payload.roles || [],
+                permissions: action.payload.permissions || [],
                 loading: false,
             };
         case 'LOGOUT':
@@ -42,14 +42,14 @@ const authReducer = (state, action) => {
         case 'SET_ORGANIZATIONS':
             return {
                 ...state,
-                organizations: action.payload,
+                organizations: action.payload || [],
             };
         case 'SWITCH_ORGANIZATION':
             return {
                 ...state,
                 selectedOrg: action.payload.orgId,
-                roles: action.payload.roles,
-                permissions: action.payload.permissions,
+                roles: action.payload.roles || [],
+                permissions: action.payload.permissions || [],
             };
         default:
             return state;
@@ -89,10 +89,9 @@ export const AuthProvider = ({ children }) => {
     };
 
     const switchOrganization = async (orgId) => {
-        const { token, roles, permissions } = await authService.switchOrganization(orgId);
+        const {  roles, permissions } = await authService.switchOrganization(orgId);
         dispatch({ type: 'SWITCH_ORGANIZATION', payload: { orgId, roles, permissions } });
-        // Optionally, refresh user data with new roles and permissions based on selected organization
-        const { user } = await authService.checkAuth(); // Assuming checkAuth returns user data including roles and permissions
+        const { user } = await authService.checkAuth(); 
         dispatch({ type: 'LOGIN', payload: { user, roles, permissions } });
     };
 

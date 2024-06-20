@@ -101,7 +101,7 @@ import Success from './Pages/Success';
 import Timeline from './Pages/Timeline';
 
 import Icons from './Icons';
-import PrivateRoute from './PrivateRoute';
+import ProtectedRoute from './ProtectedRoute';
 
 // ----------- Layout Imports ---------------
 import { DefaultNavbar } from './../layout/components/DefaultNavbar';
@@ -119,96 +119,96 @@ export const RoutedContent = () => {
             <Switch>
                 <Redirect from="/" to="/dashboards/projects" exact />
                 
-                <PrivateRoute path="/dashboards/analytics" exact component={Analytics} />
-                <PrivateRoute path="/dashboards/projects" exact component={ProjectsDashboard} />
-                <PrivateRoute path="/dashboards/system" exact component={System} />
-                <PrivateRoute path="/dashboards/monitor" exact component={Monitor} />
-                <PrivateRoute path="/dashboards/financial" exact component={Financial} />
-                <PrivateRoute path="/dashboards/stock" exact component={Stock} />
-                <PrivateRoute path="/dashboards/reports" exact component={Reports} />
+                <ProtectedRoute path="/dashboards/analytics" exact component={Analytics} />
+                <ProtectedRoute path="/dashboards/projects" exact component={ProjectsDashboard} />
+                <ProtectedRoute path="/dashboards/system" exact component={System} />
+                <ProtectedRoute path="/dashboards/monitor" exact component={Monitor} />
+                <ProtectedRoute path="/dashboards/financial" exact component={Financial} />
+                <ProtectedRoute path="/dashboards/stock" exact component={Stock} />
+                <ProtectedRoute path="/dashboards/reports" exact component={Reports} />
 
-                <PrivateRoute path='/widgets' exact component={Widgets} />
+                <ProtectedRoute path='/widgets' exact component={Widgets} />
                 
                 { /*    Cards Routes     */ }
-                <PrivateRoute path='/cards/cards' exact component={Cards} />
-                <PrivateRoute path='/cards/cardsheaders' exact component={CardsHeaders} />
+                <ProtectedRoute path='/cards/cards' exact component={Cards} />
+                <ProtectedRoute path='/cards/cardsheaders' exact component={CardsHeaders} />
                 
                 { /*    Layouts     */ }
-                <PrivateRoute path='/layouts/navbar' component={NavbarOnly} />
-                <PrivateRoute path='/layouts/sidebar' component={SidebarDefault} />
-                <PrivateRoute path='/layouts/sidebar-a' component={SidebarA} />
-                <PrivateRoute path="/layouts/sidebar-with-navbar" component={SidebarWithNavbar} />
-                <PrivateRoute path='/layouts/dnd-layout' component={DragAndDropLayout} />
+                <ProtectedRoute path='/layouts/navbar' component={NavbarOnly} />
+                <ProtectedRoute path='/layouts/sidebar' component={SidebarDefault} />
+                <ProtectedRoute path='/layouts/sidebar-a' component={SidebarA} />
+                <ProtectedRoute path="/layouts/sidebar-with-navbar" component={SidebarWithNavbar} />
+                <ProtectedRoute path='/layouts/dnd-layout' component={DragAndDropLayout} />
 
                 { /*    Interface Routes   */ }
-                <PrivateRoute component={ Accordions } path="/interface/accordions" />
-                <PrivateRoute component={ Alerts } path="/interface/alerts" />
-                <PrivateRoute component={ Avatars } path="/interface/avatars" />
-                <PrivateRoute component={ BadgesLabels } path="/interface/badges-and-labels" />
-                <PrivateRoute component={ Breadcrumbs } path="/interface/breadcrumbs" />
-                <PrivateRoute component={ Buttons } path="/interface/buttons" />
-                <PrivateRoute component={ Colors } path="/interface/colors" />
-                <PrivateRoute component={ Dropdowns } path="/interface/dropdowns" />
-                <PrivateRoute component={ Images } path="/interface/images" />
-                <PrivateRoute component={ ListGroups } path="/interface/list-groups" />
-                <PrivateRoute component={ MediaObjects } path="/interface/media-objects" />
-                <PrivateRoute component={ Modals } path="/interface/modals" />
-                <PrivateRoute component={ Navbars } path="/interface/navbars" />
-                <PrivateRoute component={ Paginations } path="/interface/paginations" />
-                <PrivateRoute component={ ProgressBars } path="/interface/progress-bars" />
-                <PrivateRoute component={ TabsPills } path="/interface/tabs-pills" />
-                <PrivateRoute component={ TooltipPopovers } path="/interface/tooltips-and-popovers" />
-                <PrivateRoute component={ Typography } path="/interface/typography" />
-                <PrivateRoute component={ Notifications } path="/interface/notifications" />
-                <PrivateRoute component={ CropImage } path="/interface/crop-image" />
-                <PrivateRoute component={ DragAndDropElements } path="/interface/drag-and-drop-elements" />
-                <PrivateRoute component={ Calendar } path="/interface/calendar" />
+                <ProtectedRoute component={ Accordions } path="/interface/accordions" />
+                <ProtectedRoute component={ Alerts } path="/interface/alerts" />
+                <ProtectedRoute component={ Avatars } path="/interface/avatars" />
+                <ProtectedRoute component={ BadgesLabels } path="/interface/badges-and-labels" />
+                <ProtectedRoute component={ Breadcrumbs } path="/interface/breadcrumbs" />
+                <ProtectedRoute component={ Buttons } path="/interface/buttons" />
+                <ProtectedRoute component={ Colors } path="/interface/colors" />
+                <ProtectedRoute component={ Dropdowns } path="/interface/dropdowns" />
+                <ProtectedRoute component={ Images } path="/interface/images" />
+                <ProtectedRoute component={ ListGroups } path="/interface/list-groups" />
+                <ProtectedRoute component={ MediaObjects } path="/interface/media-objects" />
+                <ProtectedRoute component={ Modals } path="/interface/modals" />
+                <ProtectedRoute component={ Navbars } path="/interface/navbars" />
+                <ProtectedRoute component={ Paginations } path="/interface/paginations" />
+                <ProtectedRoute component={ ProgressBars } path="/interface/progress-bars" />
+                <ProtectedRoute component={ TabsPills } path="/interface/tabs-pills" />
+                <ProtectedRoute component={ TooltipPopovers } path="/interface/tooltips-and-popovers" />
+                <ProtectedRoute component={ Typography } path="/interface/typography" />
+                <ProtectedRoute component={ Notifications } path="/interface/notifications" />
+                <ProtectedRoute component={ CropImage } path="/interface/crop-image" />
+                <ProtectedRoute component={ DragAndDropElements } path="/interface/drag-and-drop-elements" />
+                <ProtectedRoute component={ Calendar } path="/interface/calendar" />
 
                 { /*    Forms Routes    */ }
-                <PrivateRoute component={ Forms } path="/forms/forms" />
-                <PrivateRoute component={ FormsLayouts } path="/forms/forms-layouts" />
-                <PrivateRoute component={ InputGroups } path="/forms/input-groups" />
-                <PrivateRoute component={ Wizard } path="/forms/wizard" />
-                <PrivateRoute component={ TextMask } path="/forms/text-mask" />
-                <PrivateRoute component={ Typeahead } path="/forms/typeahead" />
-                <PrivateRoute component={ Toggles } path="/forms/toggles" />
-                <PrivateRoute component={ Editor } path="/forms/editor" />
-                <PrivateRoute component={ DatePicker } path="/forms/date-picker" />
-                <PrivateRoute component={ Dropzone } path="/forms/dropzone" />
-                <PrivateRoute component={ Sliders } path="/forms/sliders" />
+                <ProtectedRoute component={ Forms } path="/forms/forms" />
+                <ProtectedRoute component={ FormsLayouts } path="/forms/forms-layouts" />
+                <ProtectedRoute component={ InputGroups } path="/forms/input-groups" />
+                <ProtectedRoute component={ Wizard } path="/forms/wizard" />
+                <ProtectedRoute component={ TextMask } path="/forms/text-mask" />
+                <ProtectedRoute component={ Typeahead } path="/forms/typeahead" />
+                <ProtectedRoute component={ Toggles } path="/forms/toggles" />
+                <ProtectedRoute component={ Editor } path="/forms/editor" />
+                <ProtectedRoute component={ DatePicker } path="/forms/date-picker" />
+                <ProtectedRoute component={ Dropzone } path="/forms/dropzone" />
+                <ProtectedRoute component={ Sliders } path="/forms/sliders" />
                 
                 { /*    Graphs Routes   */ }
-                <PrivateRoute component={ ReCharts } path="/graphs/re-charts" />
+                <ProtectedRoute component={ ReCharts } path="/graphs/re-charts" />
 
                 { /*    Tables Routes   */ }
-                <PrivateRoute component={ Tables } path="/tables/tables" />
-                <PrivateRoute component={ ExtendedTable } path="/tables/extended-table" />
-                <PrivateRoute component={ AgGrid } path="/tables/ag-grid" />
+                <ProtectedRoute component={ Tables } path="/tables/tables" />
+                <ProtectedRoute component={ ExtendedTable } path="/tables/extended-table" />
+                <ProtectedRoute component={ AgGrid } path="/tables/ag-grid" />
 
                 { /*    Apps Routes     */ }
-                <PrivateRoute component={ AccountEdit } path="/apps/account-edit" />
-                <PrivateRoute component={ BillingEdit } path="/apps/billing-edit" />
-                <PrivateRoute component={ Chat } path="/apps/chat" />
-                <PrivateRoute component={ Clients } path="/apps/clients" />
-                <PrivateRoute component={ EmailDetails } path="/apps/email-details" />
-                <PrivateRoute component={ Files } path="/apps/files/:type"/>
-                <PrivateRoute component={ GalleryGrid } path="/apps/gallery-grid" />
-                <PrivateRoute component={ GalleryTable } path="/apps/gallery-table" />
-                <PrivateRoute component={ ImagesResults } path="/apps/images-results" />
-                <PrivateRoute component={ Inbox } path="/apps/inbox" />
-                <PrivateRoute component={ NewEmail } path="/apps/new-email" />
-                <PrivateRoute component={ ProfileDetails } path="/apps/profile-details" />
-                <PrivateRoute component={ ProfileEdit } path="/apps/profile-edit" />
-                <PrivateRoute component={ Projects } path="/apps/projects/:type" />
-                <PrivateRoute component={ SearchResults } path="/apps/search-results" />
-                <PrivateRoute component={ SessionsEdit } path="/apps/sessions-edit" />
-                <PrivateRoute component={ SettingsEdit } path="/apps/settings-edit" />
-                <PrivateRoute component={ Tasks } path="/apps/tasks/:type" />
-                <PrivateRoute component={ TasksDetails } path="/apps/task-details" />
-                <PrivateRoute component={ TasksKanban } path="/apps/tasks-kanban" />
-                <PrivateRoute component={ Users } path="/apps/users/:type" />
-                <PrivateRoute component={ UsersResults } path="/apps/users-results" />
-                <PrivateRoute component={ VideosResults } path="/apps/videos-results" />
+                <ProtectedRoute component={ AccountEdit } path="/apps/account-edit" />
+                <ProtectedRoute component={ BillingEdit } path="/apps/billing-edit" />
+                <ProtectedRoute component={ Chat } path="/apps/chat" />
+                <ProtectedRoute component={ Clients } path="/apps/clients" />
+                <ProtectedRoute component={ EmailDetails } path="/apps/email-details" />
+                <ProtectedRoute component={ Files } path="/apps/files/:type"/>
+                <ProtectedRoute component={ GalleryGrid } path="/apps/gallery-grid" />
+                <ProtectedRoute component={ GalleryTable } path="/apps/gallery-table" />
+                <ProtectedRoute component={ ImagesResults } path="/apps/images-results" />
+                <ProtectedRoute component={ Inbox } path="/apps/inbox" />
+                <ProtectedRoute component={ NewEmail } path="/apps/new-email" />
+                <ProtectedRoute component={ ProfileDetails } path="/apps/profile-details" />
+                <ProtectedRoute component={ ProfileEdit } path="/apps/profile-edit" />
+                <ProtectedRoute component={ Projects } path="/apps/projects/:type" />
+                <ProtectedRoute component={ SearchResults } path="/apps/search-results" />
+                <ProtectedRoute component={ SessionsEdit } path="/apps/sessions-edit" />
+                <ProtectedRoute component={ SettingsEdit } path="/apps/settings-edit" />
+                <ProtectedRoute component={ Tasks } path="/apps/tasks/:type" />
+                <ProtectedRoute component={ TasksDetails } path="/apps/task-details" />
+                <ProtectedRoute component={ TasksKanban } path="/apps/tasks-kanban" />
+                <ProtectedRoute component={ Users } path="/apps/users/:type" />
+                <ProtectedRoute component={ UsersResults } path="/apps/users-results" />
+                <ProtectedRoute component={ VideosResults } path="/apps/videos-results" />
 
                 { /*    Pages Routes    */ }
                 <Route component={ ComingSoon } path="/pages/coming-soon" />
@@ -222,7 +222,7 @@ export const RoutedContent = () => {
                 <Route component={ Success } path="/pages/success" />
                 <Route component={ Timeline } path="/pages/timeline" />
 
-                <PrivateRoute path='/icons' exact component={Icons} />
+                <ProtectedRoute path='/icons' exact component={Icons} />
 
                 { /*    404    */ }
                 <Redirect to="/error-404" />
