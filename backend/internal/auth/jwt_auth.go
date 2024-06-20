@@ -20,7 +20,10 @@ func GetJWTKey() []byte {
 }
 
 type Claims struct {
-	UserID uint
+	UserID      uint     `json:"user_id"`
+	Email       string   `json:"email"`
+	Roles       []string `json:"roles"`
+	Permissions []string `json:"permissions"`
 	jwt.RegisteredClaims
 }
 

@@ -5,7 +5,7 @@ import * as authService from '../services/authService';
 import { LOGIN_ROUTE } from '../constants/routes';
 
 export const useAuth = () => {
-    const { loading, isAuthenticated, user, login, logout } = useContext(AuthContext);
+    const { loading, isAuthenticated, user, organizations, selectedOrg, roles, permissions, login, logout, switchOrganization } = useContext(AuthContext);
     const history = useHistory();
 
     const performLogin = async (credentials) => {
@@ -24,12 +24,21 @@ export const useAuth = () => {
         await performLogin({ email: userData.email, password: userData.password });
     };
 
+    const switchOrg = async (orgId) => {
+        await switchOrganization(orgId);
+    };
+
     return {
         loading,
         isAuthenticated,
         user,
+        organizations,
+        selectedOrg,
+        roles,
+        permissions,
         performLogin,
         performLogout,
         performRegister,
+        switchOrg,
     };
 };

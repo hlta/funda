@@ -5,6 +5,7 @@ import (
 	"funda/internal/auth"
 	"funda/internal/logger"
 	"funda/internal/model"
+	"time"
 
 	"github.com/golang-jwt/jwt/v4"
 	"golang.org/x/crypto/bcrypt"
@@ -82,7 +83,7 @@ func (s *AuthService) Login(email, password string) (*model.User, error) {
 		return nil, err
 	}
 
-	token, err := auth.GenerateToken(user.ID)
+	token, err := s.GenerateToken(user, 0)
 	if err != nil {
 		s.log.WithField("action", "generating token").Error(err.Error())
 		return nil, err
@@ -120,4 +121,72 @@ func (s *AuthService) VerifyToken(tokenString string) (*model.User, error) {
 	}
 
 	return user, nil
+}
+
+func (s *AuthService) GetUserOrganizations(userID uint) ([]model.UserOrganization, error) {
+	return s.userOrgRepo.GetUserOrganizations(userID)
+}
+
+func (s *AuthService) GenerateToken(user *model.User, orgID uint) (string, error) {
+	var roles []string
+	var permissions []string
+
+	if orgID != 0 {
+		userOrgs, err := s.userOrgRepo.GetUserOrganizations(user.ID)
+		if err != nil {
+			return "", err
+		}
+
+		for _, userOrg := range userOrgs {
+			if userOrg.OrganizationID == orgID {
+				role, err := s.roleRepo.RetrieveByID(userOrg.RoleID)
+				if err != nil {
+					return "", err
+				}
+				roles = append(roles, role.Name)
+				for _, perm := range role.Permissions {
+					permissions = append(permissions, perm.Name)
+				}
+			}
+		}
+	}
+
+	claims := auth.Claims{
+		UserID:      user.ID,
+		Email:       user.Email,
+		Roles:       roles,
+		Permissions: permissions,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString([]byte(auth.GetJWTKey()))
+}
+
+func (s *AuthService) SwitchOrganization(user *model.User, orgID uint) (string, []string, []string, error) {
+	newToken, err := s.GenerateToken(user, orgID)
+	if err != nil {
+		return "", nil, nil, err
+	}
+
+	// Extract roles and permissions from the new token
+	token, err := jwt.ParseWithClaims(newToken, &auth.Claims{}, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("invalid signing method")
+		}
+		return auth.GetJWTKey(), nil
+	})
+
+	if err != nil {
+		return "", nil, nil, err
+	}
+
+	claims, ok := token.Claims.(*auth.Claims)
+	if !ok {
+		return "", nil, nil, errors.New("invalid claims")
+	}
+
+	return newToken, claims.Roles, claims.Permissions, nil
 }

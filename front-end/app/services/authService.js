@@ -49,7 +49,9 @@ export const checkAuth = async () => {
         if (response.ok) {
             return {
                 isAuthenticated: true,
-                user: data.data, // Adjust based on your backend response
+                user: data.data.user, // Adjust based on your backend response
+                roles: data.data.roles, // Adjust based on your backend response
+                permissions: data.data.permissions, // Adjust based on your backend response
             };
         } else {
             return { isAuthenticated: false, user: null };
@@ -57,4 +59,27 @@ export const checkAuth = async () => {
     } catch (error) {
         return { isAuthenticated: false, user: null };
     }
+};
+
+export const getUserOrganizations = async () => {
+    const response = await fetch(`${API_URL}/auth/orgs`, {
+        credentials: 'include',
+    });
+    const data = await handleError(response);
+    return data.data; // Adjust based on your backend response
+};
+
+export const switchOrganization = async (orgId) => {
+    const response = await fetch(`${API_URL}/auth/switch-org`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ org_id: orgId }),
+        credentials: 'include',
+    });
+    const data = await handleError(response);
+    return {
+        token: data.token, // Adjust based on your backend response
+        roles: data.roles, // Adjust based on your backend response
+        permissions: data.permissions, // Adjust based on your backend response
+    };
 };
