@@ -17,10 +17,10 @@ export const login = async (credentials) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credentials),
-        credentials: 'include', // Important for sending cookies
+        credentials: 'include', 
     });
     const data = await handleError(response);
-    return data.user; // Adjust based on your backend response
+    return data.user; 
 };
 
 export const register = async (userData) => {
@@ -49,9 +49,9 @@ export const checkAuth = async () => {
         if (response.ok) {
             return {
                 isAuthenticated: true,
-                user: data.data.user, // Adjust based on your backend response
-                roles: data.data.roles, // Adjust based on your backend response
-                permissions: data.data.permissions, // Adjust based on your backend response
+                user: data.data.user, 
+                roles: data.data.roles, 
+                permissions: data.data.permissions, 
             };
         } else {
             return { isAuthenticated: false, user: null };
@@ -66,7 +66,7 @@ export const getUserOrganizations = async () => {
         credentials: 'include',
     });
     const data = await handleError(response);
-    return data.data; // Adjust based on your backend response
+    return data.data; 
 };
 
 export const switchOrganization = async (orgId) => {
@@ -78,8 +78,8 @@ export const switchOrganization = async (orgId) => {
     });
     const data = await handleError(response);
     return {
-        token: data.token, // Adjust based on your backend response
-        roles: data.roles, // Adjust based on your backend response
-        permissions: data.permissions, // Adjust based on your backend response
+        token: data.token,
+        roles: data.roles, 
+        permissions: data.permissions, 
     };
 };
