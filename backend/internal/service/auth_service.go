@@ -5,7 +5,6 @@ import (
 	"funda/internal/auth"
 	"funda/internal/logger"
 	"funda/internal/model"
-	"time"
 
 	"github.com/golang-jwt/jwt/v4"
 	"golang.org/x/crypto/bcrypt"
@@ -31,45 +30,18 @@ func NewAuthService(userService *UserService, orgRepo model.OrganizationReposito
 
 func (s *AuthService) Signup(user *model.User, orgName string) error {
 	// Hash the password
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
-	if err != nil {
-		s.log.WithField("action", "hashing password").WithError(err).Error("Failed to hash password")
+	if err := s.hashPassword(user); err != nil {
 		return err
 	}
 
-	// Update the user password to the hashed password
-	user.Password = string(hashedPassword)
-
-	// Create the user using the UserService
+	// Create the user
 	if err := s.userService.CreateUser(user); err != nil {
-		s.log.WithField("action", "creating user").WithError(err).Error("Failed to create user")
+		s.logError("creating user", err)
 		return err
 	}
 
 	// Create the organization provided by the user
-	org := &model.Organization{Name: orgName, OwnerID: user.ID}
-	if err := s.orgRepo.Create(org); err != nil {
-		s.log.WithField("action", "creating organization").WithError(err).Error("Failed to create organization")
-		return err
-	}
-
-	// Assign the user a default role (e.g., "Admin") in the organization
-	role, err := s.roleRepo.RetrieveByName("Admin")
-	if err != nil {
-		s.log.WithField("action", "retrieving role").WithError(err).Error("Failed to retrieve default role")
-		return err
-	}
-
-	userOrg := &model.UserOrganization{UserID: user.ID, OrganizationID: org.ID, RoleID: role.ID}
-	if err := s.userOrgRepo.AddUserToOrganization(userOrg); err != nil {
-		s.log.WithField("action", "assigning user to organization").WithError(err).Error("Failed to assign user to organization")
-		return err
-	}
-
-	// Set the user's default organization
-	user.DefaultOrganizationID = org.ID
-	if err := s.userService.UpdateUser(user); err != nil {
-		s.log.WithField("action", "updating user").WithError(err).Error("Failed to update user with default organization")
+	if err := s.createOrganization(user, orgName); err != nil {
 		return err
 	}
 
@@ -81,7 +53,7 @@ func (s *AuthService) Signup(user *model.User, orgName string) error {
 func (s *AuthService) Login(email, password string) (*model.User, error) {
 	user, err := s.userService.GetUserByEmail(email)
 	if err != nil {
-		s.log.WithField("action", "retrieving user").Error(err.Error())
+		s.logError("retrieving user", err)
 		return nil, err
 	}
 
@@ -92,13 +64,13 @@ func (s *AuthService) Login(email, password string) (*model.User, error) {
 
 	// Load the default organization
 	if err := s.userService.LoadDefaultOrganization(user); err != nil {
-		s.log.WithField("action", "loading default organization").Error(err.Error())
+		s.logError("loading default organization", err)
 		return nil, err
 	}
 
-	token, err := s.GenerateToken(user, user.DefaultOrganizationID)
+	token, err := auth.GenerateToken(user, user.DefaultOrganizationID)
 	if err != nil {
-		s.log.WithField("action", "generating token").Error(err.Error())
+		s.logError("generating token", err)
 		return nil, err
 	}
 
@@ -115,11 +87,7 @@ func (s *AuthService) VerifyToken(tokenString string) (*model.User, []string, []
 		return auth.GetJWTKey(), nil
 	})
 
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
-	if !token.Valid {
+	if err != nil || !token.Valid {
 		return nil, nil, nil, errors.New("invalid token")
 	}
 
@@ -133,53 +101,43 @@ func (s *AuthService) VerifyToken(tokenString string) (*model.User, []string, []
 		return nil, nil, nil, err
 	}
 
-	return user, claims.Roles, claims.Permissions, nil
+	roles, permissions, err := s.GetRolesAndPermissions(claims.UserID, claims.OrgID)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	return user, roles, permissions, nil
 }
 
 func (s *AuthService) GetUserOrganizations(userID uint) ([]model.UserOrganization, error) {
 	return s.userOrgRepo.GetUserOrganizations(userID)
 }
 
-func (s *AuthService) GenerateToken(user *model.User, orgID uint) (string, error) {
+func (s *AuthService) GetRolesAndPermissions(userID uint, orgID uint) ([]string, []string, error) {
 	var roles []string
 	var permissions []string
 
-	if orgID != 0 {
-		userOrgs, err := s.userOrgRepo.GetUserOrganizations(user.ID)
-		if err != nil {
-			return "", err
-		}
-
-		for _, userOrg := range userOrgs {
-			if userOrg.OrganizationID == orgID {
-				role, err := s.roleRepo.RetrieveByID(userOrg.RoleID)
-				if err != nil {
-					return "", err
-				}
-				roles = append(roles, role.Name)
-				for _, perm := range role.Permissions {
-					permissions = append(permissions, perm.Name)
-				}
-			}
-		}
+	// Query the specific UserOrganization
+	userOrg, err := s.userOrgRepo.GetUserOrganization(userID, orgID)
+	if err != nil {
+		return roles, permissions, err
 	}
 
-	claims := auth.Claims{
-		UserID:      user.ID,
-		Email:       user.Email,
-		Roles:       roles,
-		Permissions: permissions,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
-		},
+	role, err := s.roleRepo.RetrieveByID(userOrg.RoleID)
+	if err != nil {
+		return roles, permissions, err
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(auth.GetJWTKey()))
+	roles = append(roles, role.Name)
+	for _, perm := range role.Permissions {
+		permissions = append(permissions, perm.Name)
+	}
+
+	return roles, permissions, nil
 }
 
 func (s *AuthService) SwitchOrganization(user *model.User, orgID uint) (string, []string, []string, error) {
-	newToken, err := s.GenerateToken(user, orgID)
+	newToken, err := auth.GenerateToken(user, orgID)
 	if err != nil {
 		return "", nil, nil, err
 	}
@@ -191,14 +149,62 @@ func (s *AuthService) SwitchOrganization(user *model.User, orgID uint) (string, 
 		return auth.GetJWTKey(), nil
 	})
 
-	if err != nil {
-		return "", nil, nil, err
+	if err != nil || !token.Valid {
+		return "", nil, nil, errors.New("invalid token")
 	}
 
 	claims, ok := token.Claims.(*auth.Claims)
 	if !ok {
 		return "", nil, nil, errors.New("invalid claims")
 	}
+	roles, permissions, err := s.GetRolesAndPermissions(claims.UserID, claims.OrgID)
+	if err != nil {
+		return "", nil, nil, err
+	}
 
-	return newToken, claims.Roles, claims.Permissions, nil
+	return newToken, roles, permissions, nil
+}
+
+// Helper Methods
+
+func (s *AuthService) hashPassword(user *model.User) error {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		s.logError("hashing password", err)
+		return err
+	}
+	user.Password = string(hashedPassword)
+	return nil
+}
+
+func (s *AuthService) createOrganization(user *model.User, orgName string) error {
+	org := &model.Organization{Name: orgName, OwnerID: user.ID}
+	if err := s.orgRepo.Create(org); err != nil {
+		s.logError("creating organization", err)
+		return err
+	}
+
+	role, err := s.roleRepo.RetrieveByName("Admin")
+	if err != nil {
+		s.logError("retrieving role", err)
+		return err
+	}
+
+	userOrg := &model.UserOrganization{UserID: user.ID, OrganizationID: org.ID, RoleID: role.ID}
+	if err := s.userOrgRepo.AddUserToOrganization(userOrg); err != nil {
+		s.logError("assigning user to organization", err)
+		return err
+	}
+
+	user.DefaultOrganizationID = org.ID
+	if err := s.userService.UpdateUser(user); err != nil {
+		s.logError("updating user", err)
+		return err
+	}
+
+	return nil
+}
+
+func (s *AuthService) logError(action string, err error) {
+	s.log.WithField("action", action).WithError(err).Error("Failed to " + action)
 }

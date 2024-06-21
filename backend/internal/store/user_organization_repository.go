@@ -31,3 +31,11 @@ func (r *GormUserOrganizationRepository) GetUserOrganizations(userID uint) ([]mo
 		Find(&userOrgs)
 	return userOrgs, result.Error
 }
+
+func (r *GormUserOrganizationRepository) GetUserOrganization(userID uint, orgID uint) (*model.UserOrganization, error) {
+	var userOrg model.UserOrganization
+	if err := r.DB.Where("user_id = ? AND organization_id = ?", userID, orgID).First(&userOrg).Error; err != nil {
+		return nil, err
+	}
+	return &userOrg, nil
+}

@@ -2,6 +2,7 @@ package auth
 
 import (
 	"funda/configs"
+	"funda/internal/model"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -20,25 +21,22 @@ func GetJWTKey() []byte {
 }
 
 type Claims struct {
-	UserID      uint     `json:"user_id"`
-	Email       string   `json:"email"`
-	Roles       []string `json:"roles"`
-	Permissions []string `json:"permissions"`
+	UserID uint   `json:"user_id"`
+	Email  string `json:"email"`
+	OrgID  uint   `json:"org_id"`
 	jwt.RegisteredClaims
 }
 
-// GenerateToken creates a JWT for a given user ID.
-func GenerateToken(userID uint) (string, error) {
-	expirationTime := time.Now().Add(24 * time.Hour)
-	claims := &Claims{
-		UserID: userID,
+func GenerateToken(user *model.User, orgID uint) (string, error) {
+	claims := Claims{
+		UserID: user.ID,
+		Email:  user.Email,
+		OrgID:  orgID,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(expirationTime),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
 		},
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString(jwtKey)
-
-	return tokenString, err
+	return token.SignedString([]byte(GetJWTKey()))
 }

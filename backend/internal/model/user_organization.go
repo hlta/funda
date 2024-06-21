@@ -20,4 +20,5 @@ type UserOrganizationRepository interface {
 	AddUserToOrganization(userOrg *UserOrganization) error
 	RemoveUserFromOrganization(userID uint, orgID uint) error
 	GetUserOrganizations(userID uint) ([]UserOrganization, error)
+	GetUserOrganization(userID uint, orgID uint) (*UserOrganization, error)
 }

@@ -59,34 +59,8 @@ func (h *AuthHandler) Signup(c echo.Context) error {
 		})
 	}
 
-	token, err := h.authService.GenerateToken(user, user.DefaultOrganizationID) // Initial login with org context
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, middleware.ErrorResponse{
-			Code:    http.StatusInternalServerError,
-			Message: "Failed to generate token",
-		})
-	}
-
-	cookie := new(http.Cookie)
-	cookie.Name = "token"
-	cookie.Value = token
-	cookie.Expires = time.Now().Add(24 * time.Hour)
-	cookie.HttpOnly = true
-	cookie.Secure = true
-	cookie.SameSite = http.SameSiteStrictMode
-	cookie.Path = "/"
-	c.SetCookie(cookie)
-
-	userResp := &response.UserResponse{
-		FirstName: user.FirstName,
-		LastName:  user.LastName,
-		Email:     user.Email,
-		Token:     token,
-	}
-
 	return c.JSON(http.StatusOK, response.GenericResponse{
 		Message: "Signup successful",
-		Data:    userResp,
 	})
 }
 
@@ -103,6 +77,14 @@ func (h *AuthHandler) Login(c echo.Context) error {
 	}
 
 	user, err := h.authService.Login(loginReq.Email, loginReq.Password)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusUnauthorized, middleware.ErrorResponse{
+			Code:    http.StatusUnauthorized,
+			Message: "Invalid credentials",
+		})
+	}
+
+	roles, permissions, err := h.authService.GetRolesAndPermissions(user.ID, user.DefaultOrganizationID)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, middleware.ErrorResponse{
 			Code:    http.StatusUnauthorized,
@@ -129,6 +111,8 @@ func (h *AuthHandler) Login(c echo.Context) error {
 			ID:   user.DefaultOrganization.ID,
 			Name: user.DefaultOrganization.Name,
 		},
+		Roles:       roles,
+		Permissions: permissions,
 	}
 
 	return c.JSON(http.StatusOK, response.GenericResponse{

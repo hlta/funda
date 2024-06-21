@@ -11,4 +11,6 @@ type UserResponse struct {
 	Email        string               `json:"email"`
 	Token        string               `json:"token,omitempty"`
 	Organization OrganizationResponse `json:"organization"`
+	Roles        []string             `json:"roles"`
+	Permissions  []string             `json:"permissions"`
 }

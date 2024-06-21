@@ -21,6 +21,7 @@ const authReducer = (state, action) => {
                 user: action.payload.user || null,
                 roles: action.payload.roles || [],
                 permissions: action.payload.permissions || [],
+                selectedOrg: action.payload.user.organization.id,
                 loading: false,
             };
         case 'LOGOUT':
