@@ -9,12 +9,14 @@ import (
 // User represents the user entity.
 type User struct {
 	gorm.Model
-	FirstName         string
-	LastName          string `json:"LastName,omitempty"`
-	Email             string `gorm:"uniqueIndex"`
-	Token             string `json:"Token,omitempty" gorm:"-"`
-	Password          string
-	UserOrganizations []UserOrganization
+	FirstName             string
+	LastName              string `json:"LastName,omitempty"`
+	Email                 string `gorm:"uniqueIndex"`
+	Token                 string `json:"Token,omitempty" gorm:"-"`
+	Password              string
+	UserOrganizations     []UserOrganization
+	DefaultOrganizationID uint
+	DefaultOrganization   Organization `gorm:"foreignKey:DefaultOrganizationID"`
 }
 
 // UserRepository is the interface that defines methods to interact with the User storage.

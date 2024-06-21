@@ -10,9 +10,9 @@ type UserOrganization struct {
 	UserID         uint
 	OrganizationID uint
 	RoleID         uint
-	User           User
-	Organization   Organization
-	Role           Role
+	User           User         `gorm:"foreignKey:UserID"`
+	Organization   Organization `gorm:"foreignKey:OrganizationID"`
+	Role           Role         `gorm:"foreignKey:RoleID"`
 }
 
 // UserOrganizationRepository defines methods to interact with the UserOrganization storage.

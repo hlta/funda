@@ -29,7 +29,7 @@ func NewAuthService(userService *UserService, orgRepo model.OrganizationReposito
 	}
 }
 
-func (s *AuthService) Signup(user *model.User) error {
+func (s *AuthService) Signup(user *model.User, orgName string) error {
 	// Hash the password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
@@ -46,8 +46,8 @@ func (s *AuthService) Signup(user *model.User) error {
 		return err
 	}
 
-	// Create a default organization for the user
-	org := &model.Organization{Name: "Default Organization", OwnerID: user.ID}
+	// Create the organization provided by the user
+	org := &model.Organization{Name: orgName, OwnerID: user.ID}
 	if err := s.orgRepo.Create(org); err != nil {
 		s.log.WithField("action", "creating organization").WithError(err).Error("Failed to create organization")
 		return err
@@ -66,33 +66,51 @@ func (s *AuthService) Signup(user *model.User) error {
 		return err
 	}
 
+	// Set the user's default organization
+	user.DefaultOrganizationID = org.ID
+	if err := s.userService.UpdateUser(user); err != nil {
+		s.log.WithField("action", "updating user").WithError(err).Error("Failed to update user with default organization")
+		return err
+	}
+
 	// Log success
 	s.log.WithField("action", "user signed up").WithField("userID", user.ID).Info("User successfully registered")
 	return nil
 }
 
 func (s *AuthService) Login(email, password string) (*model.User, error) {
-	user, err := s.userService.GetUserByEmail(email)
-	if err != nil {
-		s.log.WithField("action", "retrieving user").Error(err.Error())
-		return nil, err
-	}
+    user, err := s.userService.GetUserByEmail(email)
+    if err != nil {
+        s.log.WithField("action", "retrieving user").Error(err.Error())
+        return nil, err
+    }
 
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-		s.log.WithField("action", "password verification").Error("Invalid credentials")
-		return nil, err
-	}
+    if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+        s.log.WithField("action", "password verification").Error("Invalid credentials")
+        return nil, err
+    }
 
-	token, err := s.GenerateToken(user, 0)
-	if err != nil {
-		s.log.WithField("action", "generating token").Error(err.Error())
-		return nil, err
-	}
+    // Load the default organization
+    if err := s.userService.LoadDefaultOrganization(user); err != nil {
+        s.log.WithField("action", "loading default organization").Error(err.Error())
+        return nil, err
+    }
 
-	user.Token = token
-	s.log.WithField("action", "user logged in").Info("Token successfully generated")
-	return user, nil
+    token, err := s.GenerateToken(user, user.DefaultOrganizationID)
+    if err != nil {
+        s.log.WithField("action", "generating token").Error(err.Error())
+        return nil, err
+    }
+
+    user.Token = token
+    s.log.WithField("action", "user logged in").Info("Token successfully generated")
+    return user, nil
 }
+
+func (s *UserService) LoadDefaultOrganization(user *model.User) error {
+    return s.db.Preload("DefaultOrganization").First(&user, user.ID).Error
+}
+
 
 func (s *AuthService) VerifyToken(tokenString string) (*model.User, []string, []string, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &auth.Claims{}, func(token *jwt.Token) (interface{}, error) {

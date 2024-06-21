@@ -25,6 +25,9 @@ func (r *GormUserOrganizationRepository) RemoveUserFromOrganization(userID uint,
 
 func (r *GormUserOrganizationRepository) GetUserOrganizations(userID uint) ([]model.UserOrganization, error) {
 	var userOrgs []model.UserOrganization
-	result := r.DB.Where("user_id = ?", userID).Find(&userOrgs)
+	result := r.DB.Where("user_id = ?", userID).
+		Preload("Organization").
+		Preload("Role").
+		Find(&userOrgs)
 	return userOrgs, result.Error
 }

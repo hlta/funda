@@ -1,7 +1,6 @@
 package api
 
 import (
-	"errors"
 	"funda/internal/middleware"
 	"funda/internal/model"
 	"funda/internal/response"
@@ -32,35 +31,62 @@ func (h *AuthHandler) Register(e *echo.Echo) {
 }
 
 func (h *AuthHandler) Signup(c echo.Context) error {
-	var user model.User
-	if err := c.Bind(&user); err != nil {
+	var signupReq struct {
+		FirstName        string `json:"firstName"`
+		LastName         string `json:"lastName"`
+		Email            string `json:"email"`
+		Password         string `json:"password"`
+		OrganizationName string `json:"organizationName"`
+	}
+	if err := c.Bind(&signupReq); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, middleware.ErrorResponse{
 			Code:    http.StatusBadRequest,
 			Message: "Invalid request details",
 		})
 	}
 
-	if err := h.authService.Signup(&user); err != nil {
-		if errors.Is(err, model.ErrEmailExists) {
-			return echo.NewHTTPError(http.StatusConflict, middleware.ErrorResponse{
-				Code:    http.StatusConflict,
-				Message: "This email is already registered",
-				Errors: []middleware.FieldError{
-					{
-						Field:   "email",
-						Message: "This email is already in use",
-					},
-				},
-			})
-		}
+	user := &model.User{
+		FirstName: signupReq.FirstName,
+		LastName:  signupReq.LastName,
+		Email:     signupReq.Email,
+		Password:  signupReq.Password,
+	}
+
+	if err := h.authService.Signup(user, signupReq.OrganizationName); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, middleware.ErrorResponse{
 			Code:    http.StatusInternalServerError,
-			Message: "An unexpected error occurred. Please try again later.",
+			Message: "Failed to create user and organization",
 		})
 	}
 
-	return c.JSON(http.StatusCreated, response.GenericResponse{
-		Message: "User successfully registered",
+	token, err := h.authService.GenerateToken(user, user.DefaultOrganizationID) // Initial login with org context
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, middleware.ErrorResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Failed to generate token",
+		})
+	}
+
+	cookie := new(http.Cookie)
+	cookie.Name = "token"
+	cookie.Value = token
+	cookie.Expires = time.Now().Add(24 * time.Hour)
+	cookie.HttpOnly = true
+	cookie.Secure = true
+	cookie.SameSite = http.SameSiteStrictMode
+	cookie.Path = "/"
+	c.SetCookie(cookie)
+
+	userResp := &response.UserResponse{
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Email:     user.Email,
+		Token:     token,
+	}
+
+	return c.JSON(http.StatusOK, response.GenericResponse{
+		Message: "Signup successful",
+		Data:    userResp,
 	})
 }
 
@@ -84,17 +110,9 @@ func (h *AuthHandler) Login(c echo.Context) error {
 		})
 	}
 
-	token, err := h.authService.GenerateToken(user, 0) // Initial login without org context
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, middleware.ErrorResponse{
-			Code:    http.StatusInternalServerError,
-			Message: "Failed to generate token",
-		})
-	}
-
 	cookie := new(http.Cookie)
 	cookie.Name = "token"
-	cookie.Value = token
+	cookie.Value = user.Token
 	cookie.Expires = time.Now().Add(24 * time.Hour)
 	cookie.HttpOnly = true
 	cookie.Secure = true
@@ -106,7 +124,7 @@ func (h *AuthHandler) Login(c echo.Context) error {
 		FirstName: user.FirstName,
 		LastName:  user.LastName,
 		Email:     user.Email,
-		Token:     token,
+		Token:     user.Token,
 	}
 
 	return c.JSON(http.StatusOK, response.GenericResponse{
