@@ -79,38 +79,33 @@ func (s *AuthService) Signup(user *model.User, orgName string) error {
 }
 
 func (s *AuthService) Login(email, password string) (*model.User, error) {
-    user, err := s.userService.GetUserByEmail(email)
-    if err != nil {
-        s.log.WithField("action", "retrieving user").Error(err.Error())
-        return nil, err
-    }
+	user, err := s.userService.GetUserByEmail(email)
+	if err != nil {
+		s.log.WithField("action", "retrieving user").Error(err.Error())
+		return nil, err
+	}
 
-    if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-        s.log.WithField("action", "password verification").Error("Invalid credentials")
-        return nil, err
-    }
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+		s.log.WithField("action", "password verification").Error("Invalid credentials")
+		return nil, err
+	}
 
-    // Load the default organization
-    if err := s.userService.LoadDefaultOrganization(user); err != nil {
-        s.log.WithField("action", "loading default organization").Error(err.Error())
-        return nil, err
-    }
+	// Load the default organization
+	if err := s.userService.LoadDefaultOrganization(user); err != nil {
+		s.log.WithField("action", "loading default organization").Error(err.Error())
+		return nil, err
+	}
 
-    token, err := s.GenerateToken(user, user.DefaultOrganizationID)
-    if err != nil {
-        s.log.WithField("action", "generating token").Error(err.Error())
-        return nil, err
-    }
+	token, err := s.GenerateToken(user, user.DefaultOrganizationID)
+	if err != nil {
+		s.log.WithField("action", "generating token").Error(err.Error())
+		return nil, err
+	}
 
-    user.Token = token
-    s.log.WithField("action", "user logged in").Info("Token successfully generated")
-    return user, nil
+	user.Token = token
+	s.log.WithField("action", "user logged in").Info("Token successfully generated")
+	return user, nil
 }
-
-func (s *UserService) LoadDefaultOrganization(user *model.User) error {
-    return s.db.Preload("DefaultOrganization").First(&user, user.ID).Error
-}
-
 
 func (s *AuthService) VerifyToken(tokenString string) (*model.User, []string, []string, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &auth.Claims{}, func(token *jwt.Token) (interface{}, error) {

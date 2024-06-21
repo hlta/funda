@@ -125,6 +125,10 @@ func (h *AuthHandler) Login(c echo.Context) error {
 		LastName:  user.LastName,
 		Email:     user.Email,
 		Token:     user.Token,
+		Organization: response.OrganizationResponse{
+			ID:   user.DefaultOrganization.ID,
+			Name: user.DefaultOrganization.Name,
+		},
 	}
 
 	return c.JSON(http.StatusOK, response.GenericResponse{

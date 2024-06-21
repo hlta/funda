@@ -70,6 +70,27 @@ const Register = () => {
             </Alert>
           )}
           <FormGroup>
+            <Label for="organizationName">Business Name</Label>
+            <Controller
+              name="organizationName"
+              control={control}
+              rules={{ required: "Business name is required" }}
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  type="text"
+                  id="organizationName"
+                  placeholder="Enter your business name..."
+                  className="bg-white"
+                  invalid={errors.organizationName ? true : false}
+                />
+              )}
+            />
+            {errors.organizationName && (
+              <FormFeedback>{errors.organizationName.message}</FormFeedback>
+            )}
+          </FormGroup>
+          <FormGroup>
             <Label for="firstName">First Name</Label>
             <Controller
               name="firstName"

@@ -26,6 +26,7 @@ type UserRepository interface {
 	RetrieveByEmail(email string) (*User, error) // Retrieve a user by email
 	Update(user *User) error                     // Update a user
 	Delete(id uint) error                        // Delete a user by ID
+	LoadDefaultOrganization(user *User) error
 }
 
 // Predefined errors to handle specific scenarios
