@@ -65,10 +65,11 @@ func loadRoles(tx *gorm.DB, roles []configs.RoleConfig, log logger.Logger) error
 				return err
 			}
 		} else {
+			// Merge existing and new permissions without duplicating
 			role.Permissions = mergePermissions(role.Permissions, permissions)
-			err = tx.Save(&role).Error
+			err = tx.Model(&role).Association("Permissions").Replace(role.Permissions)
 			if err != nil {
-				log.Error("Failed to update role: ", err)
+				log.Error("Failed to update role permissions: ", err)
 				return err
 			}
 		}
