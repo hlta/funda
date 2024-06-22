@@ -64,14 +64,6 @@ func loadRoles(tx *gorm.DB, roles []configs.RoleConfig, log logger.Logger) error
 				log.Error("Failed to create role: ", err)
 				return err
 			}
-		} else {
-			// Merge existing and new permissions without duplicating
-			role.Permissions = mergePermissions(role.Permissions, permissions)
-			err = tx.Model(&role).Association("Permissions").Replace(role.Permissions)
-			if err != nil {
-				log.Error("Failed to update role permissions: ", err)
-				return err
-			}
 		}
 	}
 	return nil
@@ -89,17 +81,4 @@ func getPermissions(tx *gorm.DB, permissionNames []string, log logger.Logger) ([
 		permissions = append(permissions, permission)
 	}
 	return permissions, nil
-}
-
-func mergePermissions(existing []model.Permission, new []model.Permission) []model.Permission {
-	permissionMap := make(map[uint]model.Permission)
-	for _, perm := range existing {
-		permissionMap[perm.ID] = perm
-	}
-	for _, perm := range new {
-		if _, exists := permissionMap[perm.ID]; !exists {
-			existing = append(existing, perm)
-		}
-	}
-	return existing
 }
