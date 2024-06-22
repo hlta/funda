@@ -60,7 +60,7 @@ func main() {
 	authService := service.NewAuthService(userService, orgRepository, roleRepository, userOrgRepository, authLogger)
 
 	// Load predefined roles and permissions
-	initializer.LoadPredefinedRolesAndPermissions(database, rolesPermissionsConfig, userLogger)
+	initializer.LoadPredefinedRolesAndPermissions(database, rolesPermissionsConfig, appLogger)
 
 	api.SetupRoutes(e, userService, authService)
 

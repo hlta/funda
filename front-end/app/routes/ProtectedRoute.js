@@ -3,17 +3,26 @@ import PropTypes from 'prop-types';
 import { Route, Redirect } from 'react-router-dom';
 import { useRolesAndPermissions } from '../hooks/useRolesAndPermissions';
 import { useAuth } from '../hooks/useAuth';
+import NoPermission from './components/NoPermission'; 
 
 const ProtectedRoute = ({ component: Component, requiredPermissions, ...rest }) => {
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, loading } = useAuth();
     const { hasPermission } = useRolesAndPermissions();
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
 
     return (
         <Route
             {...rest}
             render={(props) =>
                 isAuthenticated ? (
-                    <Component {...props} />
+                    hasPermission(requiredPermissions) ? (
+                        <Component {...props} />
+                    ) : (
+                        <NoPermission />
+                    )
                 ) : (
                     <Redirect to="/login" />
                 )

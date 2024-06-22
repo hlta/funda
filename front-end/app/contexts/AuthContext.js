@@ -84,8 +84,9 @@ export const AuthProvider = ({ children }) => {
         dispatch({ type: 'SET_LOADING', payload: true });
         try {
             const user = await authService.login(credentials);
+            console.log(user);
             if (user) {
-                dispatch({ type: 'LOGIN', payload: { user } });
+                dispatch({ type: 'LOGIN', payload: { user, roles: user.roles, permissions: user.permissions } });
                 const organizations = await authService.getUserOrganizations();
                 dispatch({ type: 'SET_ORGANIZATIONS', payload: organizations });
             } else {
