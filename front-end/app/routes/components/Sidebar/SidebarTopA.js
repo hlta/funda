@@ -1,10 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Sidebar, UncontrolledButtonDropdown, Avatar, AvatarAddOn, DropdownToggle, DropdownMenu, DropdownItem } from "./../../../components";
-import { randomAvatar } from "./../../../utilities";
+import { Sidebar, UncontrolledButtonDropdown, DropdownToggle, DropdownMenu, DropdownItem } from "./../../../components";
 import { useAuth } from "../../../hooks/useAuth";
-
-const avatarImg = randomAvatar();
+import Avatar from 'react-avatar';
 
 const SidebarTopA = () => {
   const { performLogout, user } = useAuth();
@@ -22,21 +20,12 @@ const SidebarTopA = () => {
         <Sidebar.Section className="pt-0">
           <Link to="/" className="d-block">
             <Sidebar.HideSlim>
-              <Avatar.Image
-                size="lg"
-                src={avatarImg}
-                addOns={[
-                  <AvatarAddOn.Icon
-                    className="fa fa-circle"
-                    color="white"
-                    key="avatar-icon-bg"
-                  />,
-                  <AvatarAddOn.Icon
-                    className="fa fa-circle"
-                    color="success"
-                    key="avatar-icon-fg"
-                  />,
-                ]}
+              <Avatar
+                name={fullName}
+                size="50"
+                round={true}
+                color="#007bff"
+                fgColor="#ffffff"
               />
             </Sidebar.HideSlim>
           </Link>
@@ -77,21 +66,12 @@ const SidebarTopA = () => {
       {/* START: Sidebar Slim */}
       <Sidebar.ShowSlim>
         <Sidebar.Section>
-          <Avatar.Image
-            size="sm"
-            src={avatarImg}
-            addOns={[
-              <AvatarAddOn.Icon
-                className="fa fa-circle"
-                color="white"
-                key="avatar-icon-bg"
-              />,
-              <AvatarAddOn.Icon
-                className="fa fa-circle"
-                color="success"
-                key="avatar-icon-fg"
-              />,
-            ]}
+          <Avatar
+            name={fullName}
+            size="30"
+            round={true}
+            color="#007bff"
+            fgColor="#ffffff"
           />
         </Sidebar.Section>
       </Sidebar.ShowSlim>

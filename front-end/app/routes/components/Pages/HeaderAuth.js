@@ -17,12 +17,24 @@ const HeaderAuth = (props) => (
                 }
             </Link>
         </div>
-       
+        <h5 className="text-center mb-4">
+            { props.title }
+        </h5>
+        <p className="text-center">
+            { props.text }
+        </p>
     </div>
 )
 HeaderAuth.propTypes = {
     icon: PropTypes.node,
     iconClassName: PropTypes.node,
+    title: PropTypes.node,
+    text: PropTypes.node,
+};
+HeaderAuth.defaultProps = {
+    title: "Waiting for Data...",
+    text: "Join millions of savvy business owners who trust Funda to drive their success. Empower your business today with Funda's robust and reliable solutions.",
+    iconClassName: "text-theme"
 };
 
 export { HeaderAuth };

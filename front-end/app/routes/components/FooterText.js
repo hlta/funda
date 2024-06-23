@@ -7,7 +7,7 @@ const FooterText = ({ term, privacy, helps }) => (
             href="/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-decoration-none flex-grow-1"
+            className="text-decoration-none"
         >
             {term}
         </a>
@@ -15,7 +15,7 @@ const FooterText = ({ term, privacy, helps }) => (
             href="/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-decoration-none mx-5"
+            className="text-decoration-none"
         >
             {privacy}
         </a>
@@ -23,7 +23,7 @@ const FooterText = ({ term, privacy, helps }) => (
             href="/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-decoration-none flex-grow-1 text-end"
+            className="text-decoration-none"
         >
             {helps}
         </a>
