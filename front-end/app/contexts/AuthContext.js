@@ -18,10 +18,10 @@ const authReducer = (state, action) => {
             return {
                 ...state,
                 isAuthenticated: !!action.payload.user,
+                selectedOrg: action.payload.user.selectedOrg,
                 user: action.payload.user || null,
                 roles: action.payload.roles || [],
                 permissions: action.payload.permissions || [],
-                selectedOrg: action.payload.user.organization.id,
                 loading: false,
             };
         case 'LOGOUT':
