@@ -6,7 +6,7 @@ import {
     UncontrolledTooltip
 } from './../../../components';
 
-import { VersionSelector } from '../VersionSelector';
+import OrganizationSwitcher from '../OrganizationSwitcher';
 
 const SidebarTopB = () => (
     <React.Fragment>
@@ -22,10 +22,9 @@ const SidebarTopB = () => (
                             Back to Home
                         </UncontrolledTooltip>
 
-                        <VersionSelector
+                        <OrganizationSwitcher
                             down
                             sidebar
-                            dashboard="Airframe"
                             render={(currentVersion) => (
                                 <React.Fragment>
                                     <div className="h4 fw-600 sidebar-logo mb-1 text-left">

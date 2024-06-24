@@ -9,14 +9,14 @@ import {
 
 import { FooterAuth } from '../Pages/FooterAuth';
 import { FooterText } from '../FooterText';
-import { VersionSelector } from '../OrganizationSwitcher';
+import OrganizationSwitcher from '../OrganizationSwitcher';
 
 const SidebarBottomA = () => (
     <React.Fragment>
         { /* START Desktop */ }
         <Sidebar.HideSlim>
             <Sidebar.Section className="pb-0">
-                <VersionSelector sidebar dashboard="Airframe" />
+                <OrganizationSwitcher sidebar />
             </Sidebar.Section>
             <Sidebar.Section>
                 <FooterAuth className="text-muted" />
@@ -28,8 +28,7 @@ const SidebarBottomA = () => (
         <Sidebar.ShowSlim>
             <Sidebar.Section className="text-center">
                 { /* Slim Version Selector */ }
-                <VersionSelector
-                    dashboard="Airframe"
+                <OrganizationSwitcher
                     sidebar
                     compact
                     render={() => (

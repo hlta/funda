@@ -9,14 +9,14 @@ import (
 // User represents the user entity.
 type User struct {
 	gorm.Model
-	FirstName             string
-	LastName              string `json:"LastName,omitempty"`
-	Email                 string `gorm:"uniqueIndex"`
-	Token                 string `json:"Token,omitempty" gorm:"-"`
-	Password              string
-	UserOrganizations     []UserOrganization
-	DefaultOrganizationID uint
-	DefaultOrganization   Organization `gorm:"foreignKey:DefaultOrganizationID"`
+	FirstName             string             `json:"firstName"`
+	LastName              string             `json:"lastName,omitempty"`
+	Email                 string             `json:"email" gorm:"uniqueIndex"`
+	Token                 string             `json:"token,omitempty" gorm:"-"`
+	Password              string             `json:"-" gorm:"column:Password"`
+	UserOrganizations     []UserOrganization `json:"userOrganizations"`
+	DefaultOrganizationID uint               `json:"defaultOrganizationId"`
+	DefaultOrganization   Organization       `json:"defaultOrganization" gorm:"foreignKey:DefaultOrganizationID"`
 }
 
 // UserRepository is the interface that defines methods to interact with the User storage.
@@ -26,7 +26,7 @@ type UserRepository interface {
 	RetrieveByEmail(email string) (*User, error) // Retrieve a user by email
 	Update(user *User) error                     // Update a user
 	Delete(id uint) error                        // Delete a user by ID
-	LoadDefaultOrganization(user *User) error
+	LoadDefaultOrganization(user *User) error    // Load the default organization for the user
 }
 
 // Predefined errors to handle specific scenarios

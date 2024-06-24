@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { UncontrolledButtonDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
-import { useOrganizations } from '../../../hooks/useOrganizations';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
+import { useOrganizations } from '../../hooks/useOrganizations';
 
 const OrganizationSwitcher = ({ down, className, sidebar }) => {
   const { orgs, selected, switchOrg } = useOrganizations();
@@ -13,7 +13,6 @@ const OrganizationSwitcher = ({ down, className, sidebar }) => {
   const handleOrgSwitch = async (org) => {
     await switchOrg(org.id);
   };
-
   return (
     <UncontrolledButtonDropdown isOpen={dropdownOpen} toggle={toggle} direction={down ? 'down' : 'up'} className={className}>
       <DropdownToggle
@@ -33,8 +32,8 @@ const OrganizationSwitcher = ({ down, className, sidebar }) => {
       <DropdownMenu>
         {orgs.map(org => (
           <DropdownItem key={org.id} onClick={() => handleOrgSwitch(org)}>
-            {org.name}
-            {selected && selected.id === org.id && (
+            {org.organization.name}
+            {selected && selected === org.id && (
               <i className="fa fa-fw fa-check text-success ml-auto align-self-center pl-3" />
             )}
           </DropdownItem>
