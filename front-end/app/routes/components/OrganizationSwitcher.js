@@ -31,9 +31,9 @@ const OrganizationSwitcher = ({ down, className, sidebar }) => {
       </DropdownToggle>
       <DropdownMenu>
         {orgs.map(org => (
-          <DropdownItem key={org.ID} onClick={() => handleOrgSwitch(org)}>
-            {org.organization.name}
-            {selected && selected === org.ID && (
+          <DropdownItem key={org.id} onClick={() => handleOrgSwitch(org)}>
+            {org.name}
+            {selected && selected === org.id && (
               <i className="fa fa-fw fa-check text-success ml-auto align-self-center pl-3" />
             )}
           </DropdownItem>
