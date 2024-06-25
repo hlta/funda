@@ -76,15 +76,7 @@ func (h *AuthHandler) Login(c echo.Context) error {
 		})
 	}
 
-	user, err := h.authService.Login(loginReq.Email, loginReq.Password)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusUnauthorized, middleware.ErrorResponse{
-			Code:    http.StatusUnauthorized,
-			Message: "Invalid credentials",
-		})
-	}
-
-	roles, permissions, err := h.authService.GetRolesAndPermissions(user.ID, user.DefaultOrganizationID)
+	userResp, err := h.authService.Login(loginReq.Email, loginReq.Password)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, middleware.ErrorResponse{
 			Code:    http.StatusUnauthorized,
@@ -94,27 +86,13 @@ func (h *AuthHandler) Login(c echo.Context) error {
 
 	cookie := new(http.Cookie)
 	cookie.Name = "token"
-	cookie.Value = user.Token
+	cookie.Value = userResp.Token
 	cookie.Expires = time.Now().Add(24 * time.Hour)
 	cookie.HttpOnly = true
 	cookie.Secure = true
 	cookie.SameSite = http.SameSiteStrictMode
 	cookie.Path = "/"
 	c.SetCookie(cookie)
-
-	userResp := &response.UserResponse{
-		FirstName: user.FirstName,
-		LastName:  user.LastName,
-		Email:     user.Email,
-		Token:     user.Token,
-		Organization: response.OrganizationResponse{
-			ID:   user.DefaultOrganization.ID,
-			Name: user.DefaultOrganization.Name,
-		},
-		SelectedOrg: user.DefaultOrganizationID,
-		Roles:       roles,
-		Permissions: permissions,
-	}
 
 	return c.JSON(http.StatusOK, response.GenericResponse{
 		Message: "Login successful",
@@ -148,7 +126,7 @@ func (h *AuthHandler) CheckAuth(c echo.Context) error {
 	}
 
 	token := cookie.Value
-	user, roles, permissions, orgId, err := h.authService.VerifyToken(token)
+	userResp, err := h.authService.VerifyToken(token)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, middleware.ErrorResponse{
 			Code:    http.StatusUnauthorized,
@@ -156,20 +134,12 @@ func (h *AuthHandler) CheckAuth(c echo.Context) error {
 		})
 	}
 
-	userResp := &response.UserResponse{
-		FirstName:   user.FirstName,
-		LastName:    user.LastName,
-		Email:       user.Email,
-		Token:       token,
-		SelectedOrg: orgId,
-	}
-
 	return c.JSON(http.StatusOK, response.GenericResponse{
 		Message: "Authenticated",
 		Data: map[string]interface{}{
 			"user":        userResp,
-			"roles":       roles,
-			"permissions": permissions,
+			"roles":       userResp.Roles,
+			"permissions": userResp.Permissions,
 		},
 	})
 }
@@ -184,7 +154,7 @@ func (h *AuthHandler) GetUserOrganizations(c echo.Context) error {
 	}
 
 	token := cookie.Value
-	user, _, _, _, err := h.authService.VerifyToken(token)
+	userResp, err := h.authService.VerifyToken(token)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, middleware.ErrorResponse{
 			Code:    http.StatusUnauthorized,
@@ -192,7 +162,7 @@ func (h *AuthHandler) GetUserOrganizations(c echo.Context) error {
 		})
 	}
 
-	orgs, err := h.authService.GetUserOrganizations(user.ID)
+	orgs, err := h.authService.GetUserOrganizations(userResp.ID)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, middleware.ErrorResponse{
 			Code:    http.StatusInternalServerError,
@@ -216,7 +186,7 @@ func (h *AuthHandler) SwitchOrganization(c echo.Context) error {
 	}
 
 	token := cookie.Value
-	user, _, _, _, err := h.authService.VerifyToken(token)
+	userResp, err := h.authService.VerifyToken(token)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, middleware.ErrorResponse{
 			Code:    http.StatusUnauthorized,
@@ -235,7 +205,7 @@ func (h *AuthHandler) SwitchOrganization(c echo.Context) error {
 	}
 
 	// Generate a new token with the new organization context
-	newToken, roles, permissions, err := h.authService.SwitchOrganization(user, switchOrgReq.OrgID)
+	switchOrgResp, err := h.authService.SwitchOrganization(userResp.ID, switchOrgReq.OrgID)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, middleware.ErrorResponse{
 			Code:    http.StatusInternalServerError,
@@ -245,7 +215,7 @@ func (h *AuthHandler) SwitchOrganization(c echo.Context) error {
 
 	newCookie := new(http.Cookie)
 	newCookie.Name = "token"
-	newCookie.Value = newToken
+	newCookie.Value = switchOrgResp.Token
 	newCookie.Expires = time.Now().Add(24 * time.Hour)
 	newCookie.HttpOnly = true
 	newCookie.Secure = true
@@ -255,10 +225,6 @@ func (h *AuthHandler) SwitchOrganization(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response.GenericResponse{
 		Message: "Organization switched successfully",
-		Data: map[string]interface{}{
-			"token":       newToken,
-			"roles":       roles,
-			"permissions": permissions,
-		},
+		Data:    switchOrgResp,
 	})
 }

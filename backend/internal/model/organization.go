@@ -7,9 +7,9 @@ import (
 // Organization represents an organization entity.
 type Organization struct {
 	gorm.Model
-	Name              string             `json:"name"`
-	OwnerID           uint               `json:"ownerId"` // Reference to the User who created the organization
-	UserOrganizations []UserOrganization `json:"userOrganizations"`
+	Name              string
+	OwnerID           uint
+	UserOrganizations []UserOrganization
 }
 
 // OrganizationRepository defines methods to interact with the Organization storage.

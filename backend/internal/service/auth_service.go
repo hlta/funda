@@ -4,7 +4,9 @@ import (
 	"errors"
 	"funda/internal/auth"
 	"funda/internal/logger"
+	"funda/internal/mapper"
 	"funda/internal/model"
+	"funda/internal/response"
 
 	"github.com/golang-jwt/jwt/v4"
 	"golang.org/x/crypto/bcrypt"
@@ -50,7 +52,7 @@ func (s *AuthService) Signup(user *model.User, orgName string) error {
 	return nil
 }
 
-func (s *AuthService) Login(email, password string) (*model.User, error) {
+func (s *AuthService) Login(email, password string) (*response.UserResponse, error) {
 	user, err := s.userService.GetUserByEmail(email)
 	if err != nil {
 		s.logError("retrieving user", err)
@@ -74,12 +76,17 @@ func (s *AuthService) Login(email, password string) (*model.User, error) {
 		return nil, err
 	}
 
-	user.Token = token
+	roles, permissions, err := s.GetRolesAndPermissions(user.ID, user.DefaultOrganizationID)
+	if err != nil {
+		return nil, err
+	}
+
+	userResp := mapper.ToUserResponse(*user, roles, permissions, token)
 	s.log.WithField("action", "user logged in").Info("Token successfully generated")
-	return user, nil
+	return &userResp, nil
 }
 
-func (s *AuthService) VerifyToken(tokenString string) (*model.User, []string, []string, uint, error) {
+func (s *AuthService) VerifyToken(tokenString string) (*response.UserResponse, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &auth.Claims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("invalid signing method")
@@ -88,29 +95,44 @@ func (s *AuthService) VerifyToken(tokenString string) (*model.User, []string, []
 	})
 
 	if err != nil || !token.Valid {
-		return nil, nil, nil, 0, errors.New("invalid token")
+		return nil, errors.New("invalid token")
 	}
 
 	claims, ok := token.Claims.(*auth.Claims)
 	if !ok {
-		return nil, nil, nil, 0, errors.New("invalid claims")
+		return nil, errors.New("invalid claims")
 	}
 
 	user, err := s.userService.GetUserByID(claims.UserID)
 	if err != nil {
-		return nil, nil, nil, 0, err
+		return nil, err
 	}
 
 	roles, permissions, err := s.GetRolesAndPermissions(claims.UserID, claims.OrgID)
 	if err != nil {
-		return nil, nil, nil, 0, err
+		return nil, err
 	}
 
-	return user, roles, permissions, claims.OrgID, nil
+	userResp := mapper.ToUserResponse(*user, roles, permissions, tokenString)
+	return &userResp, nil
 }
 
-func (s *AuthService) GetUserOrganizations(userID uint) ([]model.UserOrganization, error) {
-	return s.userOrgRepo.GetUserOrganizations(userID)
+func (s *AuthService) GetUserOrganizations(userID uint) ([]response.OrganizationResponse, error) {
+	userOrgs, err := s.userOrgRepo.GetUserOrganizations(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	var orgs []response.OrganizationResponse
+	for _, userOrg := range userOrgs {
+		org, err := s.orgRepo.RetrieveByID(userOrg.OrganizationID)
+		if err != nil {
+			return nil, err
+		}
+		orgs = append(orgs, mapper.ToOrganizationResponse(*org))
+	}
+
+	return orgs, nil
 }
 
 func (s *AuthService) GetRolesAndPermissions(userID uint, orgID uint) ([]string, []string, error) {
@@ -136,10 +158,15 @@ func (s *AuthService) GetRolesAndPermissions(userID uint, orgID uint) ([]string,
 	return roles, permissions, nil
 }
 
-func (s *AuthService) SwitchOrganization(user *model.User, orgID uint) (string, []string, []string, error) {
+func (s *AuthService) SwitchOrganization(userId uint, orgID uint) (*response.SwitchOrganizationResponse, error) {
+
+	user, err := s.userService.GetUserByID(userId)
+	if err != nil {
+		return nil, err
+	}
 	newToken, err := auth.GenerateToken(user, orgID)
 	if err != nil {
-		return "", nil, nil, err
+		return nil, err
 	}
 
 	token, err := jwt.ParseWithClaims(newToken, &auth.Claims{}, func(token *jwt.Token) (interface{}, error) {
@@ -150,19 +177,21 @@ func (s *AuthService) SwitchOrganization(user *model.User, orgID uint) (string, 
 	})
 
 	if err != nil || !token.Valid {
-		return "", nil, nil, errors.New("invalid token")
+		return nil, errors.New("invalid token")
 	}
 
 	claims, ok := token.Claims.(*auth.Claims)
 	if !ok {
-		return "", nil, nil, errors.New("invalid claims")
-	}
-	roles, permissions, err := s.GetRolesAndPermissions(claims.UserID, claims.OrgID)
-	if err != nil {
-		return "", nil, nil, err
+		return nil, errors.New("invalid claims")
 	}
 
-	return newToken, roles, permissions, nil
+	roles, permissions, err := s.GetRolesAndPermissions(claims.UserID, claims.OrgID)
+	if err != nil {
+		return nil, err
+	}
+
+	switchOrgResp := mapper.ToSwitchOrganizationResponse(newToken, roles, permissions)
+	return &switchOrgResp, nil
 }
 
 // Helper Methods
