@@ -4,6 +4,35 @@ import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import { useOrganizations } from '../../hooks/useOrganizations';
 
+// Component to render individual organization items
+const OrganizationItem = ({ org, selected, onSelect }) => (
+  <DropdownItem key={org.id} onClick={() => onSelect(org)}>
+    {org.name}
+    {selected === org.id && (
+      <i className="fa fa-fw fa-check text-success ml-auto align-self-center pl-3" />
+    )}
+  </DropdownItem>
+);
+
+OrganizationItem.propTypes = {
+  org: PropTypes.object.isRequired,
+  selected: PropTypes.string,
+  onSelect: PropTypes.func.isRequired,
+};
+
+// Component for the Add New Organization option
+const AddNewOrganizationItem = ({ onAdd }) => (
+  <DropdownItem key="add-org" onClick={onAdd}>
+    <i className="fa fa-fw fa-plus text-primary mr-2" />
+    Add a new organization
+  </DropdownItem>
+);
+
+AddNewOrganizationItem.propTypes = {
+  onAdd: PropTypes.func.isRequired,
+};
+
+// Main component
 const OrganizationSwitcher = ({ down, className, sidebar }) => {
   const { orgs, selected, switchOrg } = useOrganizations();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -13,6 +42,9 @@ const OrganizationSwitcher = ({ down, className, sidebar }) => {
   const handleOrgSwitch = async (org) => {
     await switchOrg(org.id);
   };
+
+  const selectedOrg = orgs.find(org => org.id === selected);
+
   return (
     <UncontrolledButtonDropdown isOpen={dropdownOpen} toggle={toggle} direction={down ? 'down' : 'up'} className={className}>
       <DropdownToggle
@@ -26,23 +58,15 @@ const OrganizationSwitcher = ({ down, className, sidebar }) => {
           }
         )}
       >
-        {selected ? selected.name : 'Select Organization'}
+        {selectedOrg ? selectedOrg.name : 'Select Organization'}
         <i className={`fa ${down ? "fa-angle-down" : "fa-angle-up"} ml-2`}></i>
       </DropdownToggle>
       <DropdownMenu>
         {orgs.map(org => (
-          <DropdownItem key={org.id} onClick={() => handleOrgSwitch(org)}>
-            {org.name}
-            {selected && selected === org.id && (
-              <i className="fa fa-fw fa-check text-success ml-auto align-self-center pl-3" />
-            )}
-          </DropdownItem>
+          <OrganizationItem key={org.id} org={org} selected={selected} onSelect={handleOrgSwitch} />
         ))}
         <DropdownItem key="divider" divider />
-        <DropdownItem key="add-org" onClick={() => console.log('Add a new organization')}>
-          <i className="fa fa-fw fa-plus text-primary mr-2" />
-          Add a new organization
-        </DropdownItem>
+        <AddNewOrganizationItem onAdd={() => console.log('Add a new organization')} />
       </DropdownMenu>
     </UncontrolledButtonDropdown>
   );
