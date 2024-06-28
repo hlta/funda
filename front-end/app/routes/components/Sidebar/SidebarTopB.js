@@ -5,8 +5,8 @@ import {
     Sidebar,
     UncontrolledTooltip
 } from './../../../components';
+import OrganizationSwitcher from '../Organizations/OrganizationSwitcher';
 
-import OrganizationSwitcher from '../OrganizationSwitcher';
 
 const SidebarTopB = () => (
     <React.Fragment>

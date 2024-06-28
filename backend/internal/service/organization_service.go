@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"funda/internal/logger"
 	"funda/internal/model"
 )
@@ -21,6 +22,9 @@ func NewOrganizationService(repo model.OrganizationRepository, log logger.Logger
 
 // CreateOrganization handles the creation of a new organization.
 func (s *OrganizationService) CreateOrganization(org *model.Organization) error {
+	if org.Name == "" {
+		return errors.New("organization name is required")
+	}
 	if err := s.repo.Create(org); err != nil {
 		s.log.WithField("action", "creating organization").Error(err.Error())
 		return err
@@ -42,6 +46,9 @@ func (s *OrganizationService) GetOrganizationByID(id uint) (*model.Organization,
 
 // UpdateOrganization handles updates to an existing organization.
 func (s *OrganizationService) UpdateOrganization(org *model.Organization) error {
+	if org.Name == "" {
+		return errors.New("organization name is required")
+	}
 	if err := s.repo.Update(org); err != nil {
 		s.log.WithField("action", "updating organization").Error(err.Error())
 		return err

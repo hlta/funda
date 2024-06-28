@@ -9,7 +9,7 @@ import {
 
 import { FooterAuth } from '../Pages/FooterAuth';
 import { FooterText } from '../FooterText';
-import OrganizationSwitcher from '../OrganizationSwitcher';
+import OrganizationSwitcher from '../Organizations/OrganizationSwitcher';
 
 const SidebarBottomA = () => (
     <React.Fragment>
