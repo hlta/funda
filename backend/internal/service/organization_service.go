@@ -3,7 +3,9 @@ package service
 import (
 	"errors"
 	"funda/internal/logger"
+	"funda/internal/mapper"
 	"funda/internal/model"
+	"funda/internal/response"
 )
 
 // OrganizationService provides organization management functionalities.
@@ -34,14 +36,15 @@ func (s *OrganizationService) CreateOrganization(org *model.Organization) error 
 }
 
 // GetOrganizationByID retrieves an organization by its ID.
-func (s *OrganizationService) GetOrganizationByID(id uint) (*model.Organization, error) {
+func (s *OrganizationService) GetOrganizationByID(id uint) (*response.OrganizationResponse, error) {
 	org, err := s.repo.RetrieveByID(id)
 	if err != nil {
 		s.log.WithField("action", "retrieving organization by ID").Error(err.Error())
 		return nil, err
 	}
 	s.log.WithField("action", "organization retrieved").Info("Organization successfully retrieved")
-	return org, nil
+	orgRespResp := mapper.ToOrganizationResponse(*org)
+	return &orgRespResp, nil
 }
 
 // UpdateOrganization handles updates to an existing organization.

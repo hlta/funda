@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"funda/configs"
 	"funda/internal/model"
 	"time"
@@ -8,18 +9,7 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-var jwtKey []byte
-
-// SetupAuth initializes the jwtKey with the given config.
-func SetupAuth(config configs.OAuthConfig) {
-	jwtKey = []byte(config.JWTSecret)
-}
-
-// GetJWTKey returns the jwtKey.
-func GetJWTKey() []byte {
-	return jwtKey
-}
-
+// Claims struct defined to match the token's payload structure
 type Claims struct {
 	UserID uint   `json:"user_id"`
 	Email  string `json:"email"`
@@ -27,6 +17,15 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
+// SetupAuth initializes the jwtKey with the given config.
+var jwtKey []byte
+
+// SetupAuth initializes the jwtKey with the given config.
+func SetupAuth(config configs.OAuthConfig) {
+	jwtKey = []byte(config.JWTSecret)
+}
+
+// GenerateToken creates a JWT for a user.
 func GenerateToken(user *model.User, orgID uint) (string, error) {
 	claims := Claims{
 		UserID: user.ID,
@@ -38,5 +37,25 @@ func GenerateToken(user *model.User, orgID uint) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(GetJWTKey()))
+	return token.SignedString(jwtKey)
+}
+
+// ValidateToken verifies the token and returns the claims.
+func ValidateToken(tokenString string) (*Claims, error) {
+	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("unexpected signing method")
+		}
+		return jwtKey, nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if claims, ok := token.Claims.(*Claims); ok && token.Valid {
+		return claims, nil
+	}
+
+	return nil, errors.New("invalid token")
 }

@@ -3,10 +3,10 @@ package middleware
 import (
 	"errors"
 	"funda/configs"
+	"funda/internal/auth"
 	"net/http"
 	"strings"
 
-	"github.com/golang-jwt/jwt/v4"
 	"github.com/labstack/echo/v4"
 )
 
@@ -29,7 +29,7 @@ func OAuthMiddleware(config configs.OAuthConfig) echo.MiddlewareFunc {
 				return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
 			}
 
-			claims, err := validateToken(tokenString, config.JWTSecret)
+			claims, err := auth.ValidateToken(tokenString)
 			if err != nil {
 				return echo.NewHTTPError(http.StatusUnauthorized, "Invalid or expired JWT token")
 			}
@@ -59,24 +59,4 @@ func extractToken(authHeader string) (string, error) {
 		return "", errors.New("authorization header format must be 'Bearer {token}'")
 	}
 	return parts[1], nil
-}
-
-// validateToken parses and validates a JWT token, returning the claims if valid.
-func validateToken(tokenString, secretKey string) (jwt.MapClaims, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, errors.New("unexpected signing method")
-		}
-		return []byte(secretKey), nil
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok || !token.Valid {
-		return nil, errors.New("invalid token")
-	}
-
-	return claims, nil
 }

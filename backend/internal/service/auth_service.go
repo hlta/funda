@@ -8,7 +8,6 @@ import (
 	"funda/internal/model"
 	"funda/internal/response"
 
-	"github.com/golang-jwt/jwt/v4"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -87,19 +86,9 @@ func (s *AuthService) Login(email, password string) (*response.UserResponse, err
 }
 
 func (s *AuthService) VerifyToken(tokenString string) (*response.UserResponse, error) {
-	token, err := jwt.ParseWithClaims(tokenString, &auth.Claims{}, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, errors.New("invalid signing method")
-		}
-		return auth.GetJWTKey(), nil
-	})
 
-	if err != nil || !token.Valid {
-		return nil, errors.New("invalid token")
-	}
-
-	claims, ok := token.Claims.(*auth.Claims)
-	if !ok {
+	claims, err := auth.ValidateToken(tokenString)
+	if err != nil {
 		return nil, errors.New("invalid claims")
 	}
 
@@ -168,24 +157,7 @@ func (s *AuthService) SwitchOrganization(userId uint, orgID uint) (*response.Swi
 	if err != nil {
 		return nil, err
 	}
-
-	token, err := jwt.ParseWithClaims(newToken, &auth.Claims{}, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, errors.New("invalid signing method")
-		}
-		return auth.GetJWTKey(), nil
-	})
-
-	if err != nil || !token.Valid {
-		return nil, errors.New("invalid token")
-	}
-
-	claims, ok := token.Claims.(*auth.Claims)
-	if !ok {
-		return nil, errors.New("invalid claims")
-	}
-
-	roles, permissions, err := s.GetRolesAndPermissions(claims.UserID, claims.OrgID)
+	roles, permissions, err := s.GetRolesAndPermissions(userId, orgID)
 	if err != nil {
 		return nil, err
 	}
