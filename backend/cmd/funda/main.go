@@ -59,10 +59,12 @@ func main() {
 	authLogger := logger.NewLogger("authService")
 	authService := service.NewAuthService(userService, orgRepository, roleRepository, userOrgRepository, authLogger)
 
+	orgLogger := logger.NewLogger("orgService")
+	orgService := service.NewOrganizationService(orgRepository, orgLogger)
 	// Load predefined roles and permissions
 	initializer.LoadPredefinedRolesAndPermissions(database, rolesPermissionsConfig, appLogger)
 
-	api.SetupRoutes(e, userService, authService)
+	api.SetupRoutes(e, userService, authService, orgService)
 
 	appLogger.WithField("port", config.Server.Port).Info("Starting server")
 	e.Logger.Fatal(e.Start(":" + config.Server.Port))

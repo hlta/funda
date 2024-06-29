@@ -13,9 +13,15 @@ const AddOrganizationForm = ({ onSubmit }) => {
                     type="text"
                     className="form-control"
                     id="businessName"
-                    {...register('businessName', { required: true })}
+                    {...register('businessName', {
+                        required: 'Business Name is required',
+                        maxLength: {
+                            value: 50,
+                            message: 'Business Name cannot exceed 50 characters'
+                        }
+                    })}
                 />
-                {errors.businessName && <span className="text-danger">Business Name is required</span>}
+                {errors.businessName && <span className="text-danger">{errors.businessName.message}</span>}
             </div>
             <div className="form-group">
                 <label htmlFor="industry">Industry</label>
@@ -23,8 +29,14 @@ const AddOrganizationForm = ({ onSubmit }) => {
                     type="text"
                     className="form-control"
                     id="industry"
-                    {...register('industry')}
+                    {...register('industry', {
+                        maxLength: {
+                            value: 50,
+                            message: 'Industry cannot exceed 50 characters'
+                        }
+                    })}
                 />
+                {errors.industry && <span className="text-danger">{errors.industry.message}</span>}
             </div>
             <div className="form-group">
                 <label>Are you registered for GST?</label>

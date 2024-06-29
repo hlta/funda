@@ -5,6 +5,9 @@ export const useRolesAndPermissions = () => {
     const { roles, permissions } = useContext(AuthContext);
 
     const hasPermission = (requiredPermissions) => {
+        if (!requiredPermissions || requiredPermissions.length === 0) {
+            return true;
+        }
         return requiredPermissions.every((perm) => permissions.includes(perm));
     };
 
