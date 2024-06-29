@@ -9,15 +9,12 @@ import {
 
 import { FooterAuth } from '../Pages/FooterAuth';
 import { FooterText } from '../FooterText';
-import OrganizationSwitcher from '../Organizations/OrganizationSwitcher';
 
 const SidebarBottomA = () => (
     <React.Fragment>
         { /* START Desktop */ }
         <Sidebar.HideSlim>
-            <Sidebar.Section className="pb-0">
-                <OrganizationSwitcher sidebar />
-            </Sidebar.Section>
+      
             <Sidebar.Section>
                 <FooterAuth className="text-muted" />
             </Sidebar.Section>
@@ -27,16 +24,6 @@ const SidebarBottomA = () => (
         { /* START Slim Only */ }
         <Sidebar.ShowSlim>
             <Sidebar.Section className="text-center">
-                { /* Slim Version Selector */ }
-                <OrganizationSwitcher
-                    sidebar
-                    compact
-                    render={() => (
-                        <i className="fa fa-fw fa-toggle-on"></i>
-                    )}
-                />
-
-                { /* Footer Text as Tooltip */ }
                 <Button
                     id="UncontrolledSidebarPopoverFooter"
                     color="link"

@@ -5,7 +5,6 @@ import {
     Sidebar,
     UncontrolledTooltip
 } from './../../../components';
-import OrganizationSwitcher from '../Organizations/OrganizationSwitcher';
 
 
 const SidebarTopB = () => (
@@ -22,22 +21,6 @@ const SidebarTopB = () => (
                             Back to Home
                         </UncontrolledTooltip>
 
-                        <OrganizationSwitcher
-                            down
-                            sidebar
-                            render={(currentVersion) => (
-                                <React.Fragment>
-                                    <div className="h4 fw-600 sidebar-logo mb-1 text-left">
-                                        react.bs4 <i className="fa fa-angle-down ml-1 sidebar__link--muted"></i>
-                                    </div>
-                                    <div
-                                        className="job-title small text-left sidebar__link--muted"
-                                    >
-                                        Version: {currentVersion.label}, {currentVersion.version}
-                                    </div>
-                                </React.Fragment>
-                            )}
-                        />
                     </div>
                 </div>
             </Sidebar.HideSlim>

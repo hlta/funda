@@ -12,6 +12,8 @@ import { NavbarActivityFeed } from './NavbarActivityFeed';
 import { NavbarMessages } from './NavbarMessages';
 import { NavbarUser } from './NavbarUser';
 import { LogoThemed } from './../../routes/components/LogoThemed/LogoThemed';
+import OrganizationSwitcher from './../../routes/components/Organizations/OrganizationSwitcher';
+
 
 export const DefaultNavbar = () => (
     <Navbar light expand="xs" fluid>
@@ -45,6 +47,7 @@ export const DefaultNavbar = () => (
             </NavItem>
         </Nav>
         <Nav navbar className="ml-auto">
+            <OrganizationSwitcher/>
             <NavbarActivityFeed />
             <NavbarMessages className="ml-2" />
             <NavbarUser className="ml-2" />

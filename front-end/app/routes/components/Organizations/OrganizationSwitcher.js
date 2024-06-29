@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { UncontrolledButtonDropdown, DropdownToggle, DropdownMenu, DropdownItem, Modal, ModalHeader, ModalBody } from 'reactstrap';
-import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import { useOrganizations } from '../../../hooks/useOrganizations';
 import AddOrganizationForm from './AddOrganizationForm';
@@ -31,7 +30,7 @@ AddNewOrganizationItem.propTypes = {
     onAdd: PropTypes.func.isRequired,
 };
 
-const OrganizationSwitcher = ({ down, className, sidebar }) => {
+const OrganizationSwitcher = ({ down, className }) => {
     const { orgs, selected, switchOrg, addOrg } = useOrganizations();
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
@@ -53,21 +52,10 @@ const OrganizationSwitcher = ({ down, className, sidebar }) => {
     return (
         <>
             <UncontrolledButtonDropdown isOpen={dropdownOpen} toggle={toggleDropdown} direction={down ? 'down' : 'up'} className={className}>
-                <DropdownToggle
-                    disabled={!orgs.length}
-                    tag="a"
-                    href="#"
-                    className={classNames(
-                        'btn-switch-version',
-                        {
-                            'sidebar__link': sidebar,
-                        }
-                    )}
-                >
-                    {selectedOrg ? selectedOrg.name : 'Select Organization'}
-                    <i className={`fa ${down ? "fa-angle-down" : "fa-angle-up"} ml-2`}></i>
+                <DropdownToggle caret color="secondary" outline>
+                    {selectedOrg ? selectedOrg.name : 'Default Organization'}
                 </DropdownToggle>
-                <DropdownMenu>
+                <DropdownMenu persist>
                     {orgs.map(org => (
                         <OrganizationItem key={org.id} org={org} selected={selected} onSelect={handleOrgSwitch} />
                     ))}
