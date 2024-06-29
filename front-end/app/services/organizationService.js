@@ -1,16 +1,14 @@
-import apiClient from "../contexts/apiClient";
-
-export const createOrganization = async (organization) => {
-    const response = await apiClient.post('/organizations', organization);
+export const createOrganization = async (apiClient, data) => {
+    const response = await apiClient.post('/organizations', data);
     return response.data;
 };
 
-export const getOrganization = async (id) => {
+export const getOrganization = async (apiClient, id) => {
     const response = await apiClient.get(`/organizations/${id}`);
     return response.data;
 };
 
-export const updateOrganization = async (id, organization) => {
-    const response = await apiClient.put(`/organizations/${id}`, organization);
+export const updateOrganization = async (apiClient, id, data) => {
+    const response = await apiClient.put(`/organizations/${id}`, data);
     return response.data;
 };

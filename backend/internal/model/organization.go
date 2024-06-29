@@ -7,7 +7,7 @@ import (
 // Organization represents an organization entity.
 type Organization struct {
 	gorm.Model
-	Name              string
+	Name              string `gorm:"uniqueIndex"`
 	Industry          *string
 	GSTRegistered     *bool
 	OwnerID           uint

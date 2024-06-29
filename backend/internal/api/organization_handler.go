@@ -1,13 +1,14 @@
 package api
 
 import (
+	"net/http"
+	"strconv"
+
 	"funda/internal/auth"
 	"funda/internal/middleware"
 	"funda/internal/model"
 	"funda/internal/response"
 	"funda/internal/service"
-	"net/http"
-	"strconv"
 
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
@@ -18,9 +19,7 @@ type OrganizationHandler struct {
 }
 
 func NewOrganizationHandler(orgService *service.OrganizationService) *OrganizationHandler {
-	return &OrganizationHandler{
-		orgService: orgService,
-	}
+	return &OrganizationHandler{orgService: orgService}
 }
 
 func (h *OrganizationHandler) Register(e *echo.Echo) {
@@ -30,19 +29,19 @@ func (h *OrganizationHandler) Register(e *echo.Echo) {
 }
 
 func (h *OrganizationHandler) CreateOrganization(c echo.Context) error {
-	userClaims := c.Get("userClaims").(auth.Claims)
+	userClaims, ok := c.Get("userClaims").(*auth.Claims)
+	if !ok {
+		return newHTTPError(http.StatusBadRequest, "Invalid request payload")
+	}
 
-	var orgReq struct {
+	orgReq := new(struct {
 		Name          string `json:"name" validate:"required"`
 		Industry      string `json:"industry"`
 		GSTRegistered bool   `json:"gst_registered"`
-	}
+	})
 
-	if err := c.Bind(&orgReq); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, middleware.ErrorResponse{
-			Code:    http.StatusBadRequest,
-			Message: "Invalid request payload",
-		})
+	if err := c.Bind(orgReq); err != nil {
+		return newHTTPError(http.StatusBadRequest, "Invalid request payload")
 	}
 
 	org := &model.Organization{
@@ -53,10 +52,7 @@ func (h *OrganizationHandler) CreateOrganization(c echo.Context) error {
 	}
 
 	if err := h.orgService.CreateOrganization(org); err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, middleware.ErrorResponse{
-			Code:    http.StatusInternalServerError,
-			Message: "Failed to create organization",
-		})
+		return newHTTPError(http.StatusInternalServerError, "Failed to create organization")
 	}
 
 	return c.JSON(http.StatusOK, response.GenericResponse{
@@ -66,20 +62,14 @@ func (h *OrganizationHandler) CreateOrganization(c echo.Context) error {
 }
 
 func (h *OrganizationHandler) GetOrganization(c echo.Context) error {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	id, err := parseID(c.Param("id"))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, middleware.ErrorResponse{
-			Code:    http.StatusBadRequest,
-			Message: "Invalid organization ID",
-		})
+		return newHTTPError(http.StatusBadRequest, "Invalid organization ID")
 	}
 
-	org, err := h.orgService.GetOrganizationByID(uint(id))
+	org, err := h.orgService.GetOrganizationByID(id)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusNotFound, middleware.ErrorResponse{
-			Code:    http.StatusNotFound,
-			Message: "Organization not found",
-		})
+		return newHTTPError(http.StatusNotFound, "Organization not found")
 	}
 
 	return c.JSON(http.StatusOK, response.GenericResponse{
@@ -89,43 +79,46 @@ func (h *OrganizationHandler) GetOrganization(c echo.Context) error {
 }
 
 func (h *OrganizationHandler) UpdateOrganization(c echo.Context) error {
-	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	id, err := parseID(c.Param("id"))
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, middleware.ErrorResponse{
-			Code:    http.StatusBadRequest,
-			Message: "Invalid organization ID",
-		})
+		return newHTTPError(http.StatusBadRequest, "Invalid organization ID")
 	}
 
-	var orgReq struct {
+	orgReq := new(struct {
 		Name          string `json:"name" validate:"required"`
 		Industry      string `json:"industry"`
 		GSTRegistered bool   `json:"gst_registered"`
-	}
+	})
 
-	if err := c.Bind(&orgReq); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, middleware.ErrorResponse{
-			Code:    http.StatusBadRequest,
-			Message: "Invalid request payload",
-		})
+	if err := c.Bind(orgReq); err != nil {
+		return newHTTPError(http.StatusBadRequest, "Invalid request payload")
 	}
 
 	org := &model.Organization{
-		Model:         gorm.Model{ID: uint(id)},
+		Model:         gorm.Model{ID: id},
 		Name:          orgReq.Name,
 		Industry:      &orgReq.Industry,
 		GSTRegistered: &orgReq.GSTRegistered,
 	}
 
 	if err := h.orgService.UpdateOrganization(org); err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, middleware.ErrorResponse{
-			Code:    http.StatusInternalServerError,
-			Message: "Failed to update organization",
-		})
+		return newHTTPError(http.StatusInternalServerError, "Failed to update organization")
 	}
 
 	return c.JSON(http.StatusOK, response.GenericResponse{
 		Message: "Organization updated successfully",
 		Data:    org,
+	})
+}
+
+func parseID(idParam string) (uint, error) {
+	id, err := strconv.ParseUint(idParam, 10, 32)
+	return uint(id), err
+}
+
+func newHTTPError(statusCode int, message string) *echo.HTTPError {
+	return echo.NewHTTPError(statusCode, middleware.ErrorResponse{
+		Code:    statusCode,
+		Message: message,
 	})
 }
