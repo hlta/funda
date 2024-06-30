@@ -12,7 +12,7 @@ import PropTypes from 'prop-types';
 import { useOrganizations } from '../../../hooks/useOrganizations';
 import AddOrganizationForm from './AddOrganizationForm';
 
-const OrganizationItem = ({ org, selected, onSelect }) => (
+const OrganizationItem = ({ org, selected , onSelect }) => (
     <DropdownItem
         key={org.id}
         onClick={() => selected !== org.id && onSelect(org)}
@@ -26,7 +26,7 @@ const OrganizationItem = ({ org, selected, onSelect }) => (
 
 OrganizationItem.propTypes = {
     org: PropTypes.object.isRequired,
-    selected: PropTypes.string,
+    selected: PropTypes.number,
     onSelect: PropTypes.func.isRequired,
 };
 

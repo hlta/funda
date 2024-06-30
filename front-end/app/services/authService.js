@@ -78,8 +78,8 @@ export const switchOrganization = async (orgId) => {
     });
     const data = await handleError(response);
     return {
-        token: data.token,
-        roles: data.roles, 
-        permissions: data.permissions, 
+        token: data.data.token,
+        roles: data.data.roles, 
+        permissions: data.data.permissions, 
     };
 };

@@ -129,8 +129,6 @@ export const AuthProvider = ({ children }) => {
         try {
             const { roles, permissions } = await authService.switchOrganization(orgId);
             dispatch({ type: actionTypes.SWITCH_ORGANIZATION, payload: { orgId, roles, permissions } });
-            const { user } = await authService.checkAuth(); 
-            dispatch({ type: actionTypes.LOGIN, payload: { user, roles, permissions } });
         } catch (error) {
             console.error('Switch organization error:', error);
         } finally {

@@ -73,7 +73,7 @@ func (s *AuthService) Login(email, password string) (*response.UserResponse, err
 		return nil, err
 	}
 
-	userResp := mapper.ToUserResponse(*user, roles, permissions, token)
+	userResp := mapper.ToUserResponse(*user, roles, permissions, user.DefaultOrganizationID, token)
 	utils.LogSuccess(s.log, "user logged in", "Token successfully generated", user.ID)
 	return &userResp, nil
 }
@@ -94,7 +94,7 @@ func (s *AuthService) VerifyToken(tokenString string) (*response.UserResponse, e
 		return nil, err
 	}
 
-	userResp := mapper.ToUserResponse(*user, roles, permissions, tokenString)
+	userResp := mapper.ToUserResponse(*user, roles, permissions, claims.OrgID, tokenString)
 	return &userResp, nil
 }
 
