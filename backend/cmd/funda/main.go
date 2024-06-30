@@ -56,11 +56,12 @@ func main() {
 	roleRepository := store.NewGormRoleRepository(database)
 	userOrgRepository := store.NewGormUserOrganizationRepository(database)
 
-	authLogger := logger.NewLogger("authService")
-	authService := service.NewAuthService(userService, orgRepository, roleRepository, userOrgRepository, authLogger)
-
 	orgLogger := logger.NewLogger("orgService")
-	orgService := service.NewOrganizationService(orgRepository, orgLogger)
+	orgService := service.NewOrganizationService(orgRepository, roleRepository, userOrgRepository, orgLogger)
+
+	authLogger := logger.NewLogger("authService")
+	authService := service.NewAuthService(userService, orgService, authLogger)
+
 	// Load predefined roles and permissions
 	initializer.LoadPredefinedRolesAndPermissions(database, rolesPermissionsConfig, appLogger)
 

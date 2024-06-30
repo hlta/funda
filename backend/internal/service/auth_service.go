@@ -7,71 +7,64 @@ import (
 	"funda/internal/mapper"
 	"funda/internal/model"
 	"funda/internal/response"
+	"funda/internal/utils"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthService struct {
 	userService *UserService
-	orgRepo     model.OrganizationRepository
-	roleRepo    model.RoleRepository
-	userOrgRepo model.UserOrganizationRepository
+	orgService  *OrganizationService
 	log         logger.Logger
 }
 
-func NewAuthService(userService *UserService, orgRepo model.OrganizationRepository, roleRepo model.RoleRepository, userOrgRepo model.UserOrganizationRepository, log logger.Logger) *AuthService {
+// NewAuthService creates a new instance of AuthService.
+func NewAuthService(userService *UserService, orgService *OrganizationService, log logger.Logger) *AuthService {
 	return &AuthService{
 		userService: userService,
-		orgRepo:     orgRepo,
-		roleRepo:    roleRepo,
-		userOrgRepo: userOrgRepo,
+		orgService:  orgService,
 		log:         log,
 	}
 }
 
 func (s *AuthService) Signup(user *model.User, orgName string) error {
-	// Hash the password
 	if err := s.hashPassword(user); err != nil {
 		return err
 	}
 
-	// Create the user
 	if err := s.userService.CreateUser(user); err != nil {
-		s.logError("creating user", err)
+		utils.LogError(s.log, "creating user", err)
 		return err
 	}
 
-	// Create the organization provided by the user
 	if err := s.createOrganization(user, orgName); err != nil {
 		return err
 	}
 
-	// Log success
-	s.log.WithField("action", "user signed up").WithField("userID", user.ID).Info("User successfully registered")
+	utils.LogSuccess(s.log, "user signed up", "User successfully registered", user.ID)
 	return nil
 }
 
 func (s *AuthService) Login(email, password string) (*response.UserResponse, error) {
 	user, err := s.userService.GetUserByEmail(email)
 	if err != nil {
-		s.logError("retrieving user", err)
+		utils.LogError(s.log, "retrieving user", err)
 		return nil, err
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-		s.log.WithField("action", "password verification").Error("Invalid credentials")
+		utils.LogError(s.log, "password verification", err)
 		return nil, err
 	}
 
-	// Load the default organization
 	if err := s.userService.LoadDefaultOrganization(user); err != nil {
-		s.logError("loading default organization", err)
+		utils.LogError(s.log, "loading default organization", err)
 		return nil, err
 	}
 
 	token, err := auth.GenerateToken(user, user.DefaultOrganizationID)
 	if err != nil {
-		s.logError("generating token", err)
+		utils.LogError(s.log, "generating token", err)
 		return nil, err
 	}
 
@@ -81,12 +74,11 @@ func (s *AuthService) Login(email, password string) (*response.UserResponse, err
 	}
 
 	userResp := mapper.ToUserResponse(*user, roles, permissions, token)
-	s.log.WithField("action", "user logged in").Info("Token successfully generated")
+	utils.LogSuccess(s.log, "user logged in", "Token successfully generated", user.ID)
 	return &userResp, nil
 }
 
 func (s *AuthService) VerifyToken(tokenString string) (*response.UserResponse, error) {
-
 	claims, err := auth.ValidateToken(tokenString)
 	if err != nil {
 		return nil, errors.New("invalid claims")
@@ -107,49 +99,31 @@ func (s *AuthService) VerifyToken(tokenString string) (*response.UserResponse, e
 }
 
 func (s *AuthService) GetUserOrganizations(userID uint) ([]response.OrganizationResponse, error) {
-	userOrgs, err := s.userOrgRepo.GetUserOrganizations(userID)
-	if err != nil {
-		return nil, err
-	}
-
-	var orgs []response.OrganizationResponse
-	for _, userOrg := range userOrgs {
-		org, err := s.orgRepo.RetrieveByID(userOrg.OrganizationID)
-		if err != nil {
-			return nil, err
-		}
-		orgs = append(orgs, mapper.ToOrganizationResponse(*org))
-	}
-
-	return orgs, nil
+	return s.orgService.GetUserOrganizations(userID)
 }
 
-func (s *AuthService) GetRolesAndPermissions(userID uint, orgID uint) ([]string, []string, error) {
-	var roles []string
-	var permissions []string
-
-	// Query the specific UserOrganization
-	userOrg, err := s.userOrgRepo.GetUserOrganization(userID, orgID)
+func (s *AuthService) GetRolesAndPermissions(userID, orgID uint) ([]string, []string, error) {
+	userOrg, err := s.orgService.userOrgRepo.GetUserOrganization(userID, orgID)
 	if err != nil {
-		return roles, permissions, err
+		return nil, nil, err
 	}
 
-	role, err := s.roleRepo.RetrieveByID(userOrg.RoleID)
+	role, err := s.orgService.roleRepo.RetrieveByID(userOrg.RoleID)
 	if err != nil {
-		return roles, permissions, err
+		return nil, nil, err
 	}
 
-	roles = append(roles, role.Name)
-	for _, perm := range role.Permissions {
-		permissions = append(permissions, perm.Name)
+	roles := []string{role.Name}
+	permissions := make([]string, len(role.Permissions))
+	for i, perm := range role.Permissions {
+		permissions[i] = perm.Name
 	}
 
 	return roles, permissions, nil
 }
 
-func (s *AuthService) SwitchOrganization(userId uint, orgID uint) (*response.SwitchOrganizationResponse, error) {
-
-	user, err := s.userService.GetUserByID(userId)
+func (s *AuthService) SwitchOrganization(userID, orgID uint) (*response.SwitchOrganizationResponse, error) {
+	user, err := s.userService.GetUserByID(userID)
 	if err != nil {
 		return nil, err
 	}
@@ -157,7 +131,7 @@ func (s *AuthService) SwitchOrganization(userId uint, orgID uint) (*response.Swi
 	if err != nil {
 		return nil, err
 	}
-	roles, permissions, err := s.GetRolesAndPermissions(userId, orgID)
+	roles, permissions, err := s.GetRolesAndPermissions(userID, orgID)
 	if err != nil {
 		return nil, err
 	}
@@ -171,7 +145,7 @@ func (s *AuthService) SwitchOrganization(userId uint, orgID uint) (*response.Swi
 func (s *AuthService) hashPassword(user *model.User) error {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
-		s.logError("hashing password", err)
+		utils.LogError(s.log, "hashing password", err)
 		return err
 	}
 	user.Password = string(hashedPassword)
@@ -180,32 +154,16 @@ func (s *AuthService) hashPassword(user *model.User) error {
 
 func (s *AuthService) createOrganization(user *model.User, orgName string) error {
 	org := &model.Organization{Name: orgName, OwnerID: user.ID}
-	if err := s.orgRepo.Create(org); err != nil {
-		s.logError("creating organization", err)
-		return err
-	}
-
-	role, err := s.roleRepo.RetrieveByName("Admin")
-	if err != nil {
-		s.logError("retrieving role", err)
-		return err
-	}
-
-	userOrg := &model.UserOrganization{UserID: user.ID, OrganizationID: org.ID, RoleID: role.ID}
-	if err := s.userOrgRepo.AddUserToOrganization(userOrg); err != nil {
-		s.logError("assigning user to organization", err)
+	if err := s.orgService.CreateOrganization(org); err != nil {
+		utils.LogError(s.log, "creating user organization", err)
 		return err
 	}
 
 	user.DefaultOrganizationID = org.ID
 	if err := s.userService.UpdateUser(user); err != nil {
-		s.logError("updating user", err)
+		utils.LogError(s.log, "updating user", err)
 		return err
 	}
 
 	return nil
-}
-
-func (s *AuthService) logError(action string, err error) {
-	s.log.WithField("action", action).WithError(err).Error("Failed to " + action)
 }
