@@ -10,7 +10,7 @@ const initialState = {
     selectedOrg: null,
     roles: [],
     permissions: [],
-    token: null, 
+    token: null,
 };
 
 const actionTypes = {
@@ -19,6 +19,7 @@ const actionTypes = {
     SET_LOADING: 'SET_LOADING',
     SET_ORGANIZATIONS: 'SET_ORGANIZATIONS',
     SWITCH_ORGANIZATION: 'SWITCH_ORGANIZATION',
+    ADD_ORGANIZATION: 'ADD_ORGANIZATION',
 };
 
 const authReducer = (state, action) => {
@@ -63,6 +64,11 @@ const authReducer = (state, action) => {
                 permissions: action.payload.permissions || [],
                 loading: false,
             };
+        case actionTypes.ADD_ORGANIZATION:
+            return {
+                ...state,
+                organizations: [...state.organizations, action.payload.org],
+            };
         default:
             return state;
     }
@@ -94,13 +100,7 @@ export const AuthProvider = ({ children }) => {
     }, [setLoading]);
 
     useEffect(() => {
-        let isMounted = true;
-        if (isMounted) {
-            checkAuth();
-        }
-        return () => {
-            isMounted = false;
-        };
+        checkAuth();
     }, [checkAuth]);
 
     const login = async (credentials) => {
@@ -108,7 +108,14 @@ export const AuthProvider = ({ children }) => {
         try {
             const user = await authService.login(credentials);
             if (user) {
-                dispatch({ type: actionTypes.LOGIN, payload: { user, roles: user.roles, permissions: user.permissions } });
+                dispatch({
+                    type: actionTypes.LOGIN,
+                    payload: {
+                        user,
+                        roles: user.roles,
+                        permissions: user.permissions,
+                    },
+                });
                 const organizations = await authService.getUserOrganizations();
                 dispatch({ type: actionTypes.SET_ORGANIZATIONS, payload: organizations });
             }
@@ -128,7 +135,10 @@ export const AuthProvider = ({ children }) => {
         setLoading(true);
         try {
             const { roles, permissions } = await authService.switchOrganization(orgId);
-            dispatch({ type: actionTypes.SWITCH_ORGANIZATION, payload: { orgId, roles, permissions } });
+            dispatch({
+                type: actionTypes.SWITCH_ORGANIZATION,
+                payload: { orgId, roles, permissions },
+            });
         } catch (error) {
             console.error('Switch organization error:', error);
         } finally {
@@ -136,8 +146,14 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const addOrganization = (data) => {
+        dispatch({ type: actionTypes.ADD_ORGANIZATION, payload: { org: data } });
+    };
+
     return (
-        <AuthContext.Provider value={{ ...state, login, logout, switchOrganization }}>
+        <AuthContext.Provider
+            value={{ ...state, login, logout, switchOrganization, addOrganization }}
+        >
             {children}
         </AuthContext.Provider>
     );

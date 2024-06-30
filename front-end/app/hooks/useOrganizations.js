@@ -14,6 +14,7 @@ export const useOrganizations = () => {
     const addOrg = useCallback(async (data) => {
         const newOrg = await organizationService.createOrganization(apiClient, data);
         await addOrganization(newOrg);
+        return newOrg;
     }, [addOrganization, apiClient]);
 
     const getOrg = useCallback(async (id) => {

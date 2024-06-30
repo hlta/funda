@@ -52,8 +52,9 @@ const OrganizationSwitcher = () => {
     };
 
     const handleAddOrganization = async (data) => {
-        await addOrg(data);
+        const response = await addOrg(data);
         toggleModal();
+        switchOrg(response.id);
     };
 
     const selectedOrgName = orgs.find(org => org.id === selected)?.name || 'Default Organization';

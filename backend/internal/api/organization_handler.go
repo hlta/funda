@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"funda/internal/auth"
+	"funda/internal/mapper"
 	"funda/internal/middleware"
 	"funda/internal/model"
 	"funda/internal/response"
@@ -57,7 +58,7 @@ func (h *OrganizationHandler) CreateOrganization(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response.GenericResponse{
 		Message: "Organization created successfully",
-		Data:    org,
+		Data:    mapper.ToOrganizationResponse(*org),
 	})
 }
 
