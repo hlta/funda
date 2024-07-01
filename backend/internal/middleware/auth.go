@@ -4,6 +4,7 @@ import (
 	"errors"
 	"funda/configs"
 	"funda/internal/auth"
+	"funda/internal/constants"
 	"net/http"
 	"strings"
 
@@ -21,7 +22,7 @@ func OAuthMiddleware(config configs.OAuthConfig) echo.MiddlewareFunc {
 
 			authHeader := c.Request().Header.Get("Authorization")
 			if authHeader == "" {
-				return echo.NewHTTPError(http.StatusUnauthorized, "Authorization header is required")
+				return echo.NewHTTPError(http.StatusUnauthorized, constants.AuthorizationHeaderRequired)
 			}
 
 			tokenString, err := extractToken(authHeader)
@@ -31,11 +32,11 @@ func OAuthMiddleware(config configs.OAuthConfig) echo.MiddlewareFunc {
 
 			claims, err := auth.ValidateToken(tokenString)
 			if err != nil {
-				return echo.NewHTTPError(http.StatusUnauthorized, "Invalid or expired JWT token")
+				return echo.NewHTTPError(http.StatusUnauthorized, constants.InvalidOrExpiredToken)
 			}
 
 			// Set user context using extracted claims
-			c.Set("userClaims", claims)
+			c.Set(constants.UserClaimsKey, claims)
 
 			return next(c)
 		}
@@ -45,7 +46,7 @@ func OAuthMiddleware(config configs.OAuthConfig) echo.MiddlewareFunc {
 // isAuthOptional checks if the request path is excluded from authentication.
 func isAuthOptional(path string) bool {
 	switch path {
-	case "/login", "/signup", "/auth/check", "/logout", "/auth/orgs", "/auth/switch-org":
+	case constants.LoginRoute, constants.SignupRoute, constants.CheckAuthRoute, constants.LogoutRoute, constants.GetUserOrganizationsRoute, constants.SwitchOrgRoute:
 		return true
 	default:
 		return false
@@ -56,7 +57,7 @@ func isAuthOptional(path string) bool {
 func extractToken(authHeader string) (string, error) {
 	parts := strings.Split(authHeader, " ")
 	if len(parts) != 2 || parts[0] != "Bearer" {
-		return "", errors.New("authorization header format must be 'Bearer {token}'")
+		return "", errors.New(constants.InvalidAuthorizationHeader)
 	}
 	return parts[1], nil
 }

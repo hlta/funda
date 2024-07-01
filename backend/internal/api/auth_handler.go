@@ -1,11 +1,13 @@
 package api
 
 import (
+	"net/http"
+
+	"funda/internal/constants"
 	"funda/internal/middleware"
 	"funda/internal/model"
 	"funda/internal/response"
 	"funda/internal/service"
-	"net/http"
 
 	"github.com/labstack/echo/v4"
 )
@@ -21,12 +23,12 @@ func NewAuthHandler(authService *service.AuthService) *AuthHandler {
 }
 
 func (h *AuthHandler) Register(e *echo.Echo) {
-	e.POST("/signup", h.Signup)
-	e.POST("/login", h.Login, middleware.SetCookie)
-	e.POST("/logout", h.Logout, middleware.ClearCookie)
-	e.GET("/auth/check", h.CheckAuth)
-	e.GET("/auth/orgs", h.GetUserOrganizations)
-	e.POST("/auth/switch-org", h.SwitchOrganization, middleware.SetCookie)
+	e.POST(constants.SignupRoute, h.Signup)
+	e.POST(constants.LoginRoute, h.Login, middleware.SetCookieMiddleware)
+	e.POST(constants.LogoutRoute, h.Logout, middleware.ClearCookieMiddleware)
+	e.GET(constants.CheckAuthRoute, h.CheckAuth)
+	e.GET(constants.GetUserOrganizationsRoute, h.GetUserOrganizations)
+	e.POST(constants.SwitchOrgRoute, h.SwitchOrganization, middleware.SetCookieMiddleware)
 }
 
 func (h *AuthHandler) Signup(c echo.Context) error {
@@ -40,7 +42,7 @@ func (h *AuthHandler) Signup(c echo.Context) error {
 	if err := c.Bind(&signupReq); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, middleware.ErrorResponse{
 			Code:    http.StatusBadRequest,
-			Message: "Invalid request details",
+			Message: constants.InvalidRequestDetails,
 		})
 	}
 
@@ -54,12 +56,12 @@ func (h *AuthHandler) Signup(c echo.Context) error {
 	if err := h.authService.Signup(user, signupReq.OrganizationName); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, middleware.ErrorResponse{
 			Code:    http.StatusInternalServerError,
-			Message: "Failed to create user and organization",
+			Message: constants.FailedCreateUserAndOrg,
 		})
 	}
 
 	return c.JSON(http.StatusOK, response.GenericResponse{
-		Message: "Signup successful",
+		Message: constants.SignupSuccessful,
 	})
 }
 
@@ -71,7 +73,7 @@ func (h *AuthHandler) Login(c echo.Context) error {
 	if err := c.Bind(&loginReq); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, middleware.ErrorResponse{
 			Code:    http.StatusBadRequest,
-			Message: "Invalid request details",
+			Message: constants.InvalidRequestDetails,
 		})
 	}
 
@@ -79,30 +81,30 @@ func (h *AuthHandler) Login(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, middleware.ErrorResponse{
 			Code:    http.StatusUnauthorized,
-			Message: "Invalid credentials",
+			Message: constants.InvalidCredentials,
 		})
 	}
 
-	c.Set("token", userResp.Token)
+	c.Set(constants.TokenCookieName, userResp.Token)
 
 	return c.JSON(http.StatusOK, response.GenericResponse{
-		Message: "Login successful",
+		Message: constants.LoginSuccessful,
 		Data:    userResp,
 	})
 }
 
 func (h *AuthHandler) Logout(c echo.Context) error {
 	return c.JSON(http.StatusOK, response.GenericResponse{
-		Message: "Logout successful",
+		Message: constants.LogoutSuccessful,
 	})
 }
 
 func (h *AuthHandler) CheckAuth(c echo.Context) error {
-	cookie, err := c.Cookie("token")
+	cookie, err := c.Cookie(constants.TokenCookieName)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, middleware.ErrorResponse{
 			Code:    http.StatusUnauthorized,
-			Message: "Not authenticated",
+			Message: constants.NotAuthenticated,
 		})
 	}
 
@@ -111,12 +113,12 @@ func (h *AuthHandler) CheckAuth(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, middleware.ErrorResponse{
 			Code:    http.StatusUnauthorized,
-			Message: "Invalid token",
+			Message: constants.InvalidToken,
 		})
 	}
 
 	return c.JSON(http.StatusOK, response.GenericResponse{
-		Message: "Authenticated",
+		Message: constants.Authenticated,
 		Data: map[string]interface{}{
 			"user":        userResp,
 			"roles":       userResp.Roles,
@@ -126,11 +128,11 @@ func (h *AuthHandler) CheckAuth(c echo.Context) error {
 }
 
 func (h *AuthHandler) GetUserOrganizations(c echo.Context) error {
-	cookie, err := c.Cookie("token")
+	cookie, err := c.Cookie(constants.TokenCookieName)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, middleware.ErrorResponse{
 			Code:    http.StatusUnauthorized,
-			Message: "Not authenticated",
+			Message: constants.NotAuthenticated,
 		})
 	}
 
@@ -139,7 +141,7 @@ func (h *AuthHandler) GetUserOrganizations(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, middleware.ErrorResponse{
 			Code:    http.StatusUnauthorized,
-			Message: "Invalid token",
+			Message: constants.InvalidToken,
 		})
 	}
 
@@ -147,22 +149,22 @@ func (h *AuthHandler) GetUserOrganizations(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, middleware.ErrorResponse{
 			Code:    http.StatusInternalServerError,
-			Message: "Failed to retrieve organizations",
+			Message: constants.FailedRetrieveOrganizations,
 		})
 	}
 
 	return c.JSON(http.StatusOK, response.GenericResponse{
-		Message: "Organizations retrieved successfully",
+		Message: constants.OrganizationsRetrieved,
 		Data:    orgs,
 	})
 }
 
 func (h *AuthHandler) SwitchOrganization(c echo.Context) error {
-	cookie, err := c.Cookie("token")
+	cookie, err := c.Cookie(constants.TokenCookieName)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, middleware.ErrorResponse{
 			Code:    http.StatusUnauthorized,
-			Message: "Not authenticated",
+			Message: constants.NotAuthenticated,
 		})
 	}
 
@@ -171,7 +173,7 @@ func (h *AuthHandler) SwitchOrganization(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, middleware.ErrorResponse{
 			Code:    http.StatusUnauthorized,
-			Message: "Invalid token",
+			Message: constants.InvalidToken,
 		})
 	}
 
@@ -181,7 +183,7 @@ func (h *AuthHandler) SwitchOrganization(c echo.Context) error {
 	if err := c.Bind(&switchOrgReq); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, middleware.ErrorResponse{
 			Code:    http.StatusBadRequest,
-			Message: "Invalid request details",
+			Message: constants.InvalidRequestDetails,
 		})
 	}
 
@@ -190,14 +192,14 @@ func (h *AuthHandler) SwitchOrganization(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, middleware.ErrorResponse{
 			Code:    http.StatusInternalServerError,
-			Message: "Failed to generate token",
+			Message: constants.FailedGenerateToken,
 		})
 	}
 
-	c.Set("token", switchOrgResp.Token)
+	c.Set(constants.TokenCookieName, switchOrgResp.Token)
 
 	return c.JSON(http.StatusOK, response.GenericResponse{
-		Message: "Organization switched successfully",
+		Message: constants.OrganizationSwitched,
 		Data:    switchOrgResp,
 	})
 }

@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"funda/internal/auth"
+	"funda/internal/constants"
 	"funda/internal/mapper"
 	"funda/internal/middleware"
 	"funda/internal/model"
@@ -24,15 +25,15 @@ func NewOrganizationHandler(orgService *service.OrganizationService) *Organizati
 }
 
 func (h *OrganizationHandler) Register(e *echo.Echo) {
-	e.POST("/organizations", h.CreateOrganization)
-	e.GET("/organizations/:id", h.GetOrganization, middleware.OrganizationOwnerMiddleware(h.orgService))
-	e.PUT("/organizations/:id", h.UpdateOrganization, middleware.OrganizationOwnerMiddleware(h.orgService))
+	e.POST(constants.CreateOrganizationRoute, h.CreateOrganization)
+	e.GET(constants.GetOrganizationRoute, h.GetOrganization, middleware.OrganizationOwnerMiddleware(h.orgService))
+	e.PUT(constants.UpdateOrganizationRoute, h.UpdateOrganization, middleware.OrganizationOwnerMiddleware(h.orgService))
 }
 
 func (h *OrganizationHandler) CreateOrganization(c echo.Context) error {
 	userClaims, ok := c.Get("userClaims").(*auth.Claims)
 	if !ok {
-		return newHTTPError(http.StatusBadRequest, "Invalid request payload")
+		return newHTTPError(http.StatusBadRequest, constants.InvalidRequestDetails)
 	}
 
 	orgReq := new(struct {
@@ -42,7 +43,7 @@ func (h *OrganizationHandler) CreateOrganization(c echo.Context) error {
 	})
 
 	if err := c.Bind(orgReq); err != nil {
-		return newHTTPError(http.StatusBadRequest, "Invalid request payload")
+		return newHTTPError(http.StatusBadRequest, constants.InvalidRequestDetails)
 	}
 
 	org := &model.Organization{
@@ -53,11 +54,11 @@ func (h *OrganizationHandler) CreateOrganization(c echo.Context) error {
 	}
 
 	if err := h.orgService.CreateOrganization(org); err != nil {
-		return newHTTPError(http.StatusInternalServerError, "Failed to create organization")
+		return newHTTPError(http.StatusInternalServerError, constants.FailedCreateOrganization)
 	}
 
 	return c.JSON(http.StatusOK, response.GenericResponse{
-		Message: "Organization created successfully",
+		Message: constants.OrganizationCreatedSuccessfully,
 		Data:    mapper.ToOrganizationResponse(*org),
 	})
 }
@@ -65,16 +66,16 @@ func (h *OrganizationHandler) CreateOrganization(c echo.Context) error {
 func (h *OrganizationHandler) GetOrganization(c echo.Context) error {
 	id, err := parseID(c.Param("id"))
 	if err != nil {
-		return newHTTPError(http.StatusBadRequest, "Invalid organization ID")
+		return newHTTPError(http.StatusBadRequest, constants.InvalidOrganizationID)
 	}
 
 	org, err := h.orgService.GetOrganizationByID(id)
 	if err != nil {
-		return newHTTPError(http.StatusNotFound, "Organization not found")
+		return newHTTPError(http.StatusNotFound, constants.OrganizationNotFound)
 	}
 
 	return c.JSON(http.StatusOK, response.GenericResponse{
-		Message: "Organization retrieved successfully",
+		Message: constants.OrganizationsRetrieved,
 		Data:    org,
 	})
 }
@@ -82,7 +83,7 @@ func (h *OrganizationHandler) GetOrganization(c echo.Context) error {
 func (h *OrganizationHandler) UpdateOrganization(c echo.Context) error {
 	id, err := parseID(c.Param("id"))
 	if err != nil {
-		return newHTTPError(http.StatusBadRequest, "Invalid organization ID")
+		return newHTTPError(http.StatusBadRequest, constants.InvalidOrganizationID)
 	}
 
 	orgReq := new(struct {
@@ -92,7 +93,7 @@ func (h *OrganizationHandler) UpdateOrganization(c echo.Context) error {
 	})
 
 	if err := c.Bind(orgReq); err != nil {
-		return newHTTPError(http.StatusBadRequest, "Invalid request payload")
+		return newHTTPError(http.StatusBadRequest, constants.InvalidRequestDetails)
 	}
 
 	org := &model.Organization{
@@ -103,11 +104,11 @@ func (h *OrganizationHandler) UpdateOrganization(c echo.Context) error {
 	}
 
 	if err := h.orgService.UpdateOrganization(org); err != nil {
-		return newHTTPError(http.StatusInternalServerError, "Failed to update organization")
+		return newHTTPError(http.StatusInternalServerError, constants.FailedUpdateOrganization)
 	}
 
 	return c.JSON(http.StatusOK, response.GenericResponse{
-		Message: "Organization updated successfully",
+		Message: constants.OrganizationUpdatedSuccessfully,
 		Data:    org,
 	})
 }
