@@ -6,7 +6,6 @@ import (
 	"funda/internal/response"
 	"funda/internal/service"
 	"net/http"
-	"time"
 
 	"github.com/labstack/echo/v4"
 )
@@ -23,11 +22,11 @@ func NewAuthHandler(authService *service.AuthService) *AuthHandler {
 
 func (h *AuthHandler) Register(e *echo.Echo) {
 	e.POST("/signup", h.Signup)
-	e.POST("/login", h.Login)
-	e.POST("/logout", h.Logout)
+	e.POST("/login", h.Login, middleware.SetCookie)
+	e.POST("/logout", h.Logout, middleware.ClearCookie)
 	e.GET("/auth/check", h.CheckAuth)
 	e.GET("/auth/orgs", h.GetUserOrganizations)
-	e.POST("/auth/switch-org", h.SwitchOrganization)
+	e.POST("/auth/switch-org", h.SwitchOrganization, middleware.SetCookie)
 }
 
 func (h *AuthHandler) Signup(c echo.Context) error {
@@ -84,15 +83,7 @@ func (h *AuthHandler) Login(c echo.Context) error {
 		})
 	}
 
-	cookie := new(http.Cookie)
-	cookie.Name = "token"
-	cookie.Value = userResp.Token
-	cookie.Expires = time.Now().Add(24 * time.Hour)
-	cookie.HttpOnly = true
-	cookie.Secure = true
-	cookie.SameSite = http.SameSiteStrictMode
-	cookie.Path = "/"
-	c.SetCookie(cookie)
+	c.Set("token", userResp.Token)
 
 	return c.JSON(http.StatusOK, response.GenericResponse{
 		Message: "Login successful",
@@ -101,16 +92,6 @@ func (h *AuthHandler) Login(c echo.Context) error {
 }
 
 func (h *AuthHandler) Logout(c echo.Context) error {
-	cookie := new(http.Cookie)
-	cookie.Name = "token"
-	cookie.Value = ""
-	cookie.Expires = time.Now().Add(-time.Hour)
-	cookie.HttpOnly = true
-	cookie.Secure = true
-	cookie.SameSite = http.SameSiteStrictMode
-	cookie.Path = "/"
-	c.SetCookie(cookie)
-
 	return c.JSON(http.StatusOK, response.GenericResponse{
 		Message: "Logout successful",
 	})
@@ -213,15 +194,7 @@ func (h *AuthHandler) SwitchOrganization(c echo.Context) error {
 		})
 	}
 
-	newCookie := new(http.Cookie)
-	newCookie.Name = "token"
-	newCookie.Value = switchOrgResp.Token
-	newCookie.Expires = time.Now().Add(24 * time.Hour)
-	newCookie.HttpOnly = true
-	newCookie.Secure = true
-	newCookie.SameSite = http.SameSiteStrictMode
-	newCookie.Path = "/"
-	c.SetCookie(newCookie)
+	c.Set("token", switchOrgResp.Token)
 
 	return c.JSON(http.StatusOK, response.GenericResponse{
 		Message: "Organization switched successfully",
