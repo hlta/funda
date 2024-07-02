@@ -2,12 +2,14 @@ package api
 
 import (
 	"net/http"
+	"time"
 
 	"funda/internal/constants"
 	"funda/internal/middleware"
 	"funda/internal/model"
 	"funda/internal/response"
 	"funda/internal/service"
+	"funda/internal/utils"
 
 	"github.com/labstack/echo/v4"
 )
@@ -24,11 +26,11 @@ func NewAuthHandler(authService *service.AuthService) *AuthHandler {
 
 func (h *AuthHandler) Register(e *echo.Echo) {
 	e.POST(constants.SignupRoute, h.Signup)
-	e.POST(constants.LoginRoute, h.Login, middleware.SetCookieMiddleware)
-	e.POST(constants.LogoutRoute, h.Logout, middleware.ClearCookieMiddleware)
+	e.POST(constants.LoginRoute, h.Login)
+	e.POST(constants.LogoutRoute, h.Logout)
 	e.GET(constants.CheckAuthRoute, h.CheckAuth)
 	e.GET(constants.GetUserOrganizationsRoute, h.GetUserOrganizations)
-	e.POST(constants.SwitchOrgRoute, h.SwitchOrganization, middleware.SetCookieMiddleware)
+	e.POST(constants.SwitchOrgRoute, h.SwitchOrganization)
 }
 
 func (h *AuthHandler) Signup(c echo.Context) error {
@@ -85,7 +87,7 @@ func (h *AuthHandler) Login(c echo.Context) error {
 		})
 	}
 
-	c.Set(constants.TokenCookieName, userResp.Token)
+	utils.SetCookie(c, userResp.Token, 24*time.Hour)
 
 	return c.JSON(http.StatusOK, response.GenericResponse{
 		Message: constants.LoginSuccessful,
@@ -94,6 +96,7 @@ func (h *AuthHandler) Login(c echo.Context) error {
 }
 
 func (h *AuthHandler) Logout(c echo.Context) error {
+	utils.ClearCookie(c)
 	return c.JSON(http.StatusOK, response.GenericResponse{
 		Message: constants.LogoutSuccessful,
 	})
@@ -116,6 +119,7 @@ func (h *AuthHandler) CheckAuth(c echo.Context) error {
 			Message: constants.InvalidToken,
 		})
 	}
+	utils.SetCookie(c, userResp.Token, 24*time.Hour)
 
 	return c.JSON(http.StatusOK, response.GenericResponse{
 		Message: constants.Authenticated,
@@ -196,7 +200,7 @@ func (h *AuthHandler) SwitchOrganization(c echo.Context) error {
 		})
 	}
 
-	c.Set(constants.TokenCookieName, switchOrgResp.Token)
+	utils.SetCookie(c, switchOrgResp.Token, 24*time.Hour)
 
 	return c.JSON(http.StatusOK, response.GenericResponse{
 		Message: constants.OrganizationSwitched,
