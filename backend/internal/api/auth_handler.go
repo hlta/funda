@@ -11,16 +11,19 @@ import (
 	"funda/internal/service"
 	"funda/internal/utils"
 
+	"github.com/casbin/casbin/v2"
 	"github.com/labstack/echo/v4"
 )
 
 type AuthHandler struct {
 	authService *service.AuthService
+	enforcer    *casbin.Enforcer
 }
 
-func NewAuthHandler(authService *service.AuthService) *AuthHandler {
+func NewAuthHandler(authService *service.AuthService, enforcer *casbin.Enforcer) *AuthHandler {
 	return &AuthHandler{
 		authService: authService,
+		enforcer:    enforcer,
 	}
 }
 
@@ -40,6 +43,7 @@ func (h *AuthHandler) Signup(c echo.Context) error {
 		Email            string `json:"email"`
 		Password         string `json:"password"`
 		OrganizationName string `json:"organizationName"`
+		Role             string `json:"role"` // Role to assign on signup
 	}
 	if err := c.Bind(&signupReq); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, middleware.ErrorResponse{
@@ -59,6 +63,14 @@ func (h *AuthHandler) Signup(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, middleware.ErrorResponse{
 			Code:    http.StatusInternalServerError,
 			Message: constants.FailedCreateUserAndOrg,
+		})
+	}
+
+	// Assign specified role
+	if _, err := h.enforcer.AddGroupingPolicy(user.Email, signupReq.Role); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, middleware.ErrorResponse{
+			Code:    http.StatusInternalServerError,
+			Message: constants.FailedAssignRole,
 		})
 	}
 
@@ -121,12 +133,28 @@ func (h *AuthHandler) CheckAuth(c echo.Context) error {
 	}
 	utils.SetCookie(c, userResp.Token, 24*time.Hour)
 
+	roles, err := h.enforcer.GetRolesForUser(userResp.Email)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, middleware.ErrorResponse{
+			Code:    http.StatusInternalServerError,
+			Message: constants.FailedRetrieveRoles,
+		})
+	}
+
+	permissions, err := h.enforcer.GetImplicitPermissionsForUser(userResp.Email)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, middleware.ErrorResponse{
+			Code:    http.StatusInternalServerError,
+			Message: constants.FailedRetrievePermissions,
+		})
+	}
+
 	return c.JSON(http.StatusOK, response.GenericResponse{
 		Message: constants.Authenticated,
 		Data: map[string]interface{}{
 			"user":        userResp,
-			"roles":       userResp.Roles,
-			"permissions": userResp.Permissions,
+			"roles":       roles,
+			"permissions": permissions,
 		},
 	})
 }

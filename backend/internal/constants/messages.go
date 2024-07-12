@@ -32,4 +32,8 @@ const (
 	InvalidOrExpiredToken       = "Invalid or expired JWT token"
 	UserClaimsNotAvailable      = "User claims are not available"
 	TokenNotFound               = "Token not found in context"
+
+	FailedAssignRole          = "Failed to assign role"
+	FailedRetrieveRoles       = "Failed to retrieve role"
+	FailedRetrievePermissions = "Failed to retrieve permissions"
 )

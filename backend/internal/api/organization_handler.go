@@ -12,16 +12,18 @@ import (
 	"funda/internal/response"
 	"funda/internal/service"
 
+	"github.com/casbin/casbin/v2"
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
 )
 
 type OrganizationHandler struct {
 	orgService *service.OrganizationService
+	enforcer   *casbin.Enforcer
 }
 
-func NewOrganizationHandler(orgService *service.OrganizationService) *OrganizationHandler {
-	return &OrganizationHandler{orgService: orgService}
+func NewOrganizationHandler(orgService *service.OrganizationService, enforcer *casbin.Enforcer) *OrganizationHandler {
+	return &OrganizationHandler{orgService: orgService, enforcer: enforcer}
 }
 
 func (h *OrganizationHandler) Register(e *echo.Echo) {

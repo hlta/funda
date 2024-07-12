@@ -103,23 +103,7 @@ func (s *AuthService) GetUserOrganizations(userID uint) ([]response.Organization
 }
 
 func (s *AuthService) GetRolesAndPermissions(userID, orgID uint) ([]string, []string, error) {
-	userOrg, err := s.orgService.userOrgRepo.GetUserOrganization(userID, orgID)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	role, err := s.orgService.roleRepo.RetrieveByID(userOrg.RoleID)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	roles := []string{role.Name}
-	permissions := make([]string, len(role.Permissions))
-	for i, perm := range role.Permissions {
-		permissions[i] = perm.Name
-	}
-
-	return roles, permissions, nil
+	return nil, nil, nil
 }
 
 func (s *AuthService) SwitchOrganization(userID, orgID uint) (*response.SwitchOrganizationResponse, error) {

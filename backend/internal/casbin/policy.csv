@@ -1,0 +1,40 @@
+# Define permissions
+p, admin, manage_users, allow
+p, admin, view_reports, allow
+p, admin, manage_invoices, allow
+p, admin, manage_bills, allow
+p, admin, manage_contacts, allow
+p, admin, manage_bank_accounts, allow
+p, admin, view_payroll, allow
+p, admin, manage_payroll, allow
+p, admin, manage_inventory, allow
+p, admin, view_financial_settings, allow
+p, admin, manage_financial_settings, allow
+
+p, advisor, manage_users, allow
+p, advisor, view_reports, allow
+p, advisor, manage_invoices, allow
+p, advisor, manage_bills, allow
+p, advisor, manage_contacts, allow
+p, advisor, manage_bank_accounts, allow
+p, advisor, view_payroll, allow
+p, advisor, manage_payroll, allow
+p, advisor, manage_inventory, allow
+p, advisor, view_financial_settings, allow
+p, advisor, manage_financial_settings, allow
+
+p, standard, view_reports, allow
+p, standard, manage_invoices, allow
+p, standard, manage_bills, allow
+p, standard, manage_contacts, allow
+p, standard, manage_bank_accounts, allow
+p, standard, manage_inventory, allow
+
+p, invoice_only, manage_invoices, allow
+p, invoice_only, manage_contacts, allow
+
+p, read_only, view_reports, allow
+p, read_only, view_payroll, allow
+
+p, cashbook_client, view_reports, allow
+p, cashbook_client, manage_bank_accounts, allow
