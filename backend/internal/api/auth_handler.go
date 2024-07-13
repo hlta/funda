@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"funda/internal/constants"
+	"funda/internal/mapper"
 	"funda/internal/middleware"
 	"funda/internal/model"
 	"funda/internal/response"
@@ -43,7 +44,6 @@ func (h *AuthHandler) Signup(c echo.Context) error {
 		Email            string `json:"email"`
 		Password         string `json:"password"`
 		OrganizationName string `json:"organizationName"`
-		Role             string `json:"role"` // Role to assign on signup
 	}
 	if err := c.Bind(&signupReq); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, middleware.ErrorResponse{
@@ -67,7 +67,7 @@ func (h *AuthHandler) Signup(c echo.Context) error {
 	}
 
 	// Assign specified role
-	if _, err := h.enforcer.AddGroupingPolicy(user.Email, signupReq.Role); err != nil {
+	if _, err := h.enforcer.AddGroupingPolicy(user.Email, constants.AdminRoleName); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, middleware.ErrorResponse{
 			Code:    http.StatusInternalServerError,
 			Message: constants.FailedAssignRole,
@@ -91,7 +91,7 @@ func (h *AuthHandler) Login(c echo.Context) error {
 		})
 	}
 
-	userResp, err := h.authService.Login(loginReq.Email, loginReq.Password)
+	userResp, token, err := h.authService.Login(loginReq.Email, loginReq.Password)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, middleware.ErrorResponse{
 			Code:    http.StatusUnauthorized,
@@ -99,11 +99,27 @@ func (h *AuthHandler) Login(c echo.Context) error {
 		})
 	}
 
-	utils.SetCookie(c, userResp.Token, 24*time.Hour)
+	roles, err := h.enforcer.GetRolesForUser(userResp.Email)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, middleware.ErrorResponse{
+			Code:    http.StatusInternalServerError,
+			Message: constants.FailedRetrieveRoles,
+		})
+	}
+
+	permissions, err := h.enforcer.GetImplicitPermissionsForUser(userResp.Email)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, middleware.ErrorResponse{
+			Code:    http.StatusInternalServerError,
+			Message: constants.FailedRetrievePermissions,
+		})
+	}
+
+	utils.SetCookie(c, *token, 24*time.Hour)
 
 	return c.JSON(http.StatusOK, response.GenericResponse{
 		Message: constants.LoginSuccessful,
-		Data:    userResp,
+		Data:    mapper.ToAuthResponse(*userResp, *token, roles, permissions),
 	})
 }
 
@@ -131,7 +147,7 @@ func (h *AuthHandler) CheckAuth(c echo.Context) error {
 			Message: constants.InvalidToken,
 		})
 	}
-	utils.SetCookie(c, userResp.Token, 24*time.Hour)
+	utils.SetCookie(c, token, 24*time.Hour)
 
 	roles, err := h.enforcer.GetRolesForUser(userResp.Email)
 	if err != nil {
@@ -151,11 +167,7 @@ func (h *AuthHandler) CheckAuth(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response.GenericResponse{
 		Message: constants.Authenticated,
-		Data: map[string]interface{}{
-			"user":        userResp,
-			"roles":       roles,
-			"permissions": permissions,
-		},
+		Data:    mapper.ToAuthResponse(*userResp, token, roles, permissions),
 	})
 }
 
@@ -220,7 +232,7 @@ func (h *AuthHandler) SwitchOrganization(c echo.Context) error {
 	}
 
 	// Generate a new token with the new organization context
-	switchOrgResp, err := h.authService.SwitchOrganization(userResp.ID, switchOrgReq.OrgID)
+	newToken, err := h.authService.SwitchOrganization(userResp.ID, switchOrgReq.OrgID)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, middleware.ErrorResponse{
 			Code:    http.StatusInternalServerError,
@@ -228,10 +240,10 @@ func (h *AuthHandler) SwitchOrganization(c echo.Context) error {
 		})
 	}
 
-	utils.SetCookie(c, switchOrgResp.Token, 24*time.Hour)
+	utils.SetCookie(c, newToken, 24*time.Hour)
 
 	return c.JSON(http.StatusOK, response.GenericResponse{
 		Message: constants.OrganizationSwitched,
-		Data:    switchOrgResp,
+		Data:    newToken,
 	})
 }

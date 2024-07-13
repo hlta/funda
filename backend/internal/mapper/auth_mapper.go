@@ -2,9 +2,9 @@ package mapper
 
 import "funda/internal/response"
 
-// ToSwitchOrganizationResponse maps the result of switching organizations to a response.SwitchOrganizationResponse.
-func ToSwitchOrganizationResponse(token string, roles []string, permissions []string) response.SwitchOrganizationResponse {
-	return response.SwitchOrganizationResponse{
+func ToAuthResponse(user response.UserResponse, token string, roles []string, permissions [][]string) response.AuthResponse {
+	return response.AuthResponse{
+		User:        user,
 		Token:       token,
 		Roles:       roles,
 		Permissions: permissions,

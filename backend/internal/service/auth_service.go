@@ -45,37 +45,32 @@ func (s *AuthService) Signup(user *model.User, orgName string) error {
 	return nil
 }
 
-func (s *AuthService) Login(email, password string) (*response.UserResponse, error) {
+func (s *AuthService) Login(email, password string) (*response.UserResponse, *string, error) {
 	user, err := s.userService.GetUserByEmail(email)
 	if err != nil {
 		utils.LogError(s.log, "retrieving user", err)
-		return nil, err
+		return nil, nil, err
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
 		utils.LogError(s.log, "password verification", err)
-		return nil, err
+		return nil, nil, err
 	}
 
 	if err := s.userService.LoadDefaultOrganization(user); err != nil {
 		utils.LogError(s.log, "loading default organization", err)
-		return nil, err
+		return nil, nil, err
 	}
 
 	token, err := auth.GenerateToken(user, user.DefaultOrganizationID)
 	if err != nil {
 		utils.LogError(s.log, "generating token", err)
-		return nil, err
+		return nil, nil, err
 	}
 
-	roles, permissions, err := s.GetRolesAndPermissions(user.ID, user.DefaultOrganizationID)
-	if err != nil {
-		return nil, err
-	}
-
-	userResp := mapper.ToUserResponse(*user, roles, permissions, user.DefaultOrganizationID, token)
+	userResp := mapper.ToUserResponse(*user, user.DefaultOrganizationID)
 	utils.LogSuccess(s.log, "user logged in", "Token successfully generated", user.ID)
-	return &userResp, nil
+	return &userResp, &token, nil
 }
 
 func (s *AuthService) VerifyToken(tokenString string) (*response.UserResponse, error) {
@@ -89,12 +84,7 @@ func (s *AuthService) VerifyToken(tokenString string) (*response.UserResponse, e
 		return nil, err
 	}
 
-	roles, permissions, err := s.GetRolesAndPermissions(claims.UserID, claims.OrgID)
-	if err != nil {
-		return nil, err
-	}
-
-	userResp := mapper.ToUserResponse(*user, roles, permissions, claims.OrgID, tokenString)
+	userResp := mapper.ToUserResponse(*user, claims.OrgID)
 	return &userResp, nil
 }
 
@@ -102,30 +92,15 @@ func (s *AuthService) GetUserOrganizations(userID uint) ([]response.Organization
 	return s.orgService.GetUserOrganizations(userID)
 }
 
-func (s *AuthService) GetRolesAndPermissions(userID, orgID uint) ([]string, []string, error) {
-	return nil, nil, nil
-}
-
-func (s *AuthService) SwitchOrganization(userID, orgID uint) (*response.SwitchOrganizationResponse, error) {
+func (s *AuthService) SwitchOrganization(userID, orgID uint) (string, error) {
 	user, err := s.userService.GetUserByID(userID)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	newToken, err := auth.GenerateToken(user, orgID)
-	if err != nil {
-		return nil, err
-	}
-	roles, permissions, err := s.GetRolesAndPermissions(userID, orgID)
-	if err != nil {
-		return nil, err
-	}
-
-	switchOrgResp := mapper.ToSwitchOrganizationResponse(newToken, roles, permissions)
-	return &switchOrgResp, nil
+	return auth.GenerateToken(user, orgID)
 }
 
 // Helper Methods
-
 func (s *AuthService) hashPassword(user *model.User) error {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
