@@ -27,6 +27,16 @@ func (r *GormUserRepository) Create(user *model.User) error {
 	return nil
 }
 
+func (r *GormUserRepository) CreateWithTx(tx *gorm.DB, user *model.User) error {
+	if err := tx.Create(user).Error; err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return model.ErrEmailExists
+		}
+		return err
+	}
+	return nil
+}
+
 // RetrieveByID finds a user by their ID.
 func (r *GormUserRepository) RetrieveByID(id uint) (*model.User, error) {
 	user := &model.User{}
@@ -50,6 +60,11 @@ func (r *GormUserRepository) RetrieveByEmail(email string) (*model.User, error) 
 // Update modifies an existing user in the database.
 func (r *GormUserRepository) Update(user *model.User) error {
 	result := r.DB.Save(user)
+	return result.Error
+}
+
+func (r *GormUserRepository) UpdateWithTx(tx *gorm.DB, user *model.User) error {
+	result := tx.Save(user)
 	return result.Error
 }
 

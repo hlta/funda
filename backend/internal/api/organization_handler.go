@@ -11,6 +11,7 @@ import (
 	"funda/internal/model"
 	"funda/internal/response"
 	"funda/internal/service"
+	"funda/internal/utils"
 
 	"github.com/casbin/casbin/v2"
 	"github.com/labstack/echo/v4"
@@ -57,6 +58,11 @@ func (h *OrganizationHandler) CreateOrganization(c echo.Context) error {
 
 	if err := h.orgService.CreateOrganization(org); err != nil {
 		return newHTTPError(http.StatusInternalServerError, constants.FailedCreateOrganization)
+	}
+
+	// Add predefined roles and permissions for the new organization
+	if err := utils.AddPredefinedRolesAndPermissions(h.enforcer, org.ID); err != nil {
+		return newHTTPError(http.StatusInternalServerError, constants.FailedToSetPermissions)
 	}
 
 	return c.JSON(http.StatusOK, response.GenericResponse{

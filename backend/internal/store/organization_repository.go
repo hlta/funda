@@ -15,8 +15,8 @@ func NewGormOrganizationRepository(db *gorm.DB) *GormOrganizationRepository {
 	return &GormOrganizationRepository{DB: db}
 }
 
-func (r *GormOrganizationRepository) Create(org *model.Organization) error {
-	return r.DB.Create(org).Error
+func (r *GormOrganizationRepository) CreateWithTx(tx *gorm.DB, org *model.Organization) error {
+	return tx.Create(org).Error
 }
 
 func (r *GormOrganizationRepository) RetrieveByID(id uint) (*model.Organization, error) {

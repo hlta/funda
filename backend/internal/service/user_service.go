@@ -3,6 +3,8 @@ package service
 import (
 	"funda/internal/logger"
 	"funda/internal/model"
+
+	"gorm.io/gorm"
 )
 
 // UserService provides user management functionalities.
@@ -23,6 +25,17 @@ func NewUserService(repo model.UserRepository, log logger.Logger) *UserService {
 func (s *UserService) CreateUser(user *model.User) error {
 	s.log.WithField("action", "creating user").Info("Attempting to create user")
 	if err := s.repo.Create(user); err != nil {
+		s.log.WithField("action", "creating user").Error(err.Error())
+		return err
+	}
+	s.log.WithField("action", "user created").Info("User successfully created")
+	return nil
+}
+
+// CreateUserWithTx handles the creation of a new user within a transaction.
+func (s *UserService) CreateUserWithTx(tx *gorm.DB, user *model.User) error {
+	s.log.WithField("action", "creating user").Info("Attempting to create user")
+	if err := s.repo.CreateWithTx(tx, user); err != nil {
 		s.log.WithField("action", "creating user").Error(err.Error())
 		return err
 	}
@@ -58,6 +71,17 @@ func (s *UserService) GetUserByEmail(email string) (*model.User, error) {
 func (s *UserService) UpdateUser(user *model.User) error {
 	s.log.WithField("action", "updating user").Info("Attempting to update user")
 	if err := s.repo.Update(user); err != nil {
+		s.log.WithField("action", "updating user").Error(err.Error())
+		return err
+	}
+	s.log.WithField("action", "user updated").Info("User successfully updated")
+	return nil
+}
+
+// UpdateUserWithTx handles updates to an existing user within a transaction.
+func (s *UserService) UpdateUserWithTx(tx *gorm.DB, user *model.User) error {
+	s.log.WithField("action", "updating user").Info("Attempting to update user")
+	if err := s.repo.UpdateWithTx(tx, user); err != nil {
 		s.log.WithField("action", "updating user").Error(err.Error())
 		return err
 	}

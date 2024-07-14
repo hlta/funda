@@ -25,6 +25,7 @@ const (
 	OrganizationUpdatedSuccessfully = "Organization updated successfully"
 	OrganizationSwitched            = "Organization switched successfully"
 	FailedRetrieveOrganizations     = "Failed to retrieve organizations"
+	FailedToSetPermissions          = "Failed to set permissions for the organization"
 
 	// Middleware Messages
 	AuthorizationHeaderRequired = "authorization header is required"

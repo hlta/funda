@@ -16,8 +16,7 @@ type UserOrganization struct {
 
 // UserOrganizationRepository defines methods to interact with the UserOrganization storage.
 type UserOrganizationRepository interface {
-	AddUserToOrganization(userOrg *UserOrganization) error
-	RemoveUserFromOrganization(userID uint, orgID uint) error
+	AddUserToOrganizationWithTx(tx *gorm.DB, userOrg *UserOrganization) error
+	RemoveUserFromOrganization(userID, orgID uint) error
 	GetUserOrganizations(userID uint) ([]UserOrganization, error)
-	GetUserOrganization(userID uint, orgID uint) (*UserOrganization, error)
 }

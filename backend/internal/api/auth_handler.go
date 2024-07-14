@@ -60,6 +60,12 @@ func (h *AuthHandler) Signup(c echo.Context) error {
 		return h.respondWithError(c, http.StatusInternalServerError, constants.FailedCreateUserAndOrg, err)
 	}
 
+	// Add predefined roles and permissions for the new organization
+	if err := utils.AddPredefinedRolesAndPermissions(h.enforcer, user.DefaultOrganizationID); err != nil {
+		return h.respondWithError(c, http.StatusInternalServerError, constants.FailedToSetPermissions, err)
+	}
+
+	// Assign the admin role to the new user in their default organization
 	if err := h.assignRole(user.ID, user.DefaultOrganizationID, constants.AdminRoleName); err != nil {
 		return h.respondWithError(c, http.StatusInternalServerError, constants.FailedAssignRole, err)
 	}
@@ -83,7 +89,7 @@ func (h *AuthHandler) Login(c echo.Context) error {
 		return h.respondWithError(c, http.StatusUnauthorized, constants.InvalidCredentials, err)
 	}
 
-	roles, permissions, err := h.getUserRolesAndPermissions(userResp.ID, userResp.SelectedOrg)
+	roles, permissions, err := h.getUserRolesAndPermissions(userResp.ID, userResp.Organization.ID)
 	if err != nil {
 		return h.respondWithError(c, http.StatusInternalServerError, constants.FailedRetrieveRoles, err)
 	}
@@ -97,10 +103,7 @@ func (h *AuthHandler) Login(c echo.Context) error {
 }
 
 func (h *AuthHandler) getUserRolesAndPermissions(userID uint, orgID uint) ([]string, [][]string, error) {
-	roles, err := h.enforcer.GetRolesForUser(utils.UintToString(userID), utils.UintToString(orgID))
-	if err != nil {
-		return nil, nil, err
-	}
+	roles := h.enforcer.GetRolesForUserInDomain(utils.UintToString(userID), utils.UintToString(orgID))
 
 	permissions, err := h.enforcer.GetImplicitPermissionsForUser(utils.UintToString(userID), utils.UintToString(orgID))
 	if err != nil {
@@ -111,7 +114,7 @@ func (h *AuthHandler) getUserRolesAndPermissions(userID uint, orgID uint) ([]str
 }
 
 func (h *AuthHandler) assignRole(userID uint, orgID uint, roleName string) error {
-	_, err := h.enforcer.AddGroupingPolicy(utils.UintToString(userID), utils.UintToString(orgID), roleName)
+	_, err := h.enforcer.AddGroupingPolicy(utils.UintToString(userID), roleName, utils.UintToString(orgID))
 	return err
 }
 

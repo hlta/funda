@@ -26,6 +26,8 @@ type UserRepository interface {
 	Update(user *User) error                     // Update a user
 	Delete(id uint) error                        // Delete a user by ID
 	LoadDefaultOrganization(user *User) error    // Load the default organization for the user
+	CreateWithTx(tx *gorm.DB, user *User) error
+	UpdateWithTx(tx *gorm.DB, user *User) error
 }
 
 // Predefined errors to handle specific scenarios

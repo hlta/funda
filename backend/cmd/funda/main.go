@@ -5,7 +5,6 @@ import (
 	"funda/internal/api"
 	"funda/internal/auth"
 	"funda/internal/db"
-	"funda/internal/initializer"
 	"funda/internal/logger"
 	"funda/internal/model"
 	"funda/internal/service"
@@ -61,11 +60,6 @@ func initializeCasbin(database *gorm.DB, appLogger logger.Logger) *casbin.Enforc
 		appLogger.WithField("error", err).Fatal("Failed to load policy")
 	}
 
-	policyPath := filepath.Join("internal", "casbin", "policy.csv")
-	if err := initializer.LoadPoliciesFromCSV(enforcer, policyPath, appLogger); err != nil {
-		appLogger.WithField("error", err).Fatal("Failed to load policies from CSV")
-	}
-
 	return enforcer
 }
 
@@ -79,10 +73,10 @@ func initializeServices(database *gorm.DB) (*service.UserService, *service.Organ
 	userOrgRepository := store.NewGormUserOrganizationRepository(database)
 
 	orgLogger := logger.NewLogger("orgService")
-	orgService := service.NewOrganizationService(orgRepository, userOrgRepository, orgLogger)
+	orgService := service.NewOrganizationService(orgRepository, userOrgRepository, orgLogger, database)
 
 	authLogger := logger.NewLogger("authService")
-	authService := service.NewAuthService(userService, orgService, authLogger)
+	authService := service.NewAuthService(userService, orgService, authLogger, database)
 
 	return userService, orgService, authService
 }

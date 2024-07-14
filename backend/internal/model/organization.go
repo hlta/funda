@@ -16,7 +16,7 @@ type Organization struct {
 
 // OrganizationRepository defines methods to interact with the Organization storage.
 type OrganizationRepository interface {
-	Create(org *Organization) error
+	CreateWithTx(tx *gorm.DB, org *Organization) error
 	RetrieveByID(id uint) (*Organization, error)
 	Update(org *Organization) error
 	Delete(id uint) error
