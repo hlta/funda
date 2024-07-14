@@ -18,3 +18,7 @@ func ParseUint(value string) (uint, error) {
 	}
 	return uint(parsed), nil
 }
+
+func UintToString(num uint) string {
+	return strconv.FormatUint(uint64(num), 10)
+}

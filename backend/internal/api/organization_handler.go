@@ -33,7 +33,7 @@ func (h *OrganizationHandler) Register(e *echo.Group) {
 }
 
 func (h *OrganizationHandler) CreateOrganization(c echo.Context) error {
-	userClaims, ok := c.Get("userClaims").(*auth.Claims)
+	userClaims, ok := c.Get(constants.UserClaimsKey).(*auth.Claims)
 	if !ok {
 		return newHTTPError(http.StatusBadRequest, constants.InvalidRequestDetails)
 	}

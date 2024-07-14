@@ -46,10 +46,7 @@ func (h *AuthHandler) Signup(c echo.Context) error {
 		OrganizationName string `json:"organizationName"`
 	}
 	if err := c.Bind(&signupReq); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, middleware.ErrorResponse{
-			Code:    http.StatusBadRequest,
-			Message: constants.InvalidRequestDetails,
-		})
+		return h.respondWithError(c, http.StatusBadRequest, constants.InvalidRequestDetails, err)
 	}
 
 	user := &model.User{
@@ -60,18 +57,11 @@ func (h *AuthHandler) Signup(c echo.Context) error {
 	}
 
 	if err := h.authService.Signup(user, signupReq.OrganizationName); err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, middleware.ErrorResponse{
-			Code:    http.StatusInternalServerError,
-			Message: constants.FailedCreateUserAndOrg,
-		})
+		return h.respondWithError(c, http.StatusInternalServerError, constants.FailedCreateUserAndOrg, err)
 	}
 
-	// Assign specified role
-	if _, err := h.enforcer.AddGroupingPolicy(user.Email, constants.AdminRoleName); err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, middleware.ErrorResponse{
-			Code:    http.StatusInternalServerError,
-			Message: constants.FailedAssignRole,
-		})
+	if err := h.assignRole(user.ID, user.DefaultOrganizationID, constants.AdminRoleName); err != nil {
+		return h.respondWithError(c, http.StatusInternalServerError, constants.FailedAssignRole, err)
 	}
 
 	return c.JSON(http.StatusOK, response.GenericResponse{
@@ -85,34 +75,17 @@ func (h *AuthHandler) Login(c echo.Context) error {
 		Password string `json:"password"`
 	}
 	if err := c.Bind(&loginReq); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, middleware.ErrorResponse{
-			Code:    http.StatusBadRequest,
-			Message: constants.InvalidRequestDetails,
-		})
+		return h.respondWithError(c, http.StatusBadRequest, constants.InvalidRequestDetails, err)
 	}
 
 	userResp, token, err := h.authService.Login(loginReq.Email, loginReq.Password)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusUnauthorized, middleware.ErrorResponse{
-			Code:    http.StatusUnauthorized,
-			Message: constants.InvalidCredentials,
-		})
+		return h.respondWithError(c, http.StatusUnauthorized, constants.InvalidCredentials, err)
 	}
 
-	roles, err := h.enforcer.GetRolesForUser(userResp.Email)
+	roles, permissions, err := h.getUserRolesAndPermissions(userResp.ID, userResp.SelectedOrg)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, middleware.ErrorResponse{
-			Code:    http.StatusInternalServerError,
-			Message: constants.FailedRetrieveRoles,
-		})
-	}
-
-	permissions, err := h.enforcer.GetImplicitPermissionsForUser(userResp.Email)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, middleware.ErrorResponse{
-			Code:    http.StatusInternalServerError,
-			Message: constants.FailedRetrievePermissions,
-		})
+		return h.respondWithError(c, http.StatusInternalServerError, constants.FailedRetrieveRoles, err)
 	}
 
 	utils.SetCookie(c, *token, 24*time.Hour)
@@ -121,6 +94,25 @@ func (h *AuthHandler) Login(c echo.Context) error {
 		Message: constants.LoginSuccessful,
 		Data:    mapper.ToAuthResponse(*userResp, *token, roles, permissions),
 	})
+}
+
+func (h *AuthHandler) getUserRolesAndPermissions(userID uint, orgID uint) ([]string, [][]string, error) {
+	roles, err := h.enforcer.GetRolesForUser(utils.UintToString(userID), utils.UintToString(orgID))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	permissions, err := h.enforcer.GetImplicitPermissionsForUser(utils.UintToString(userID), utils.UintToString(orgID))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return roles, permissions, nil
+}
+
+func (h *AuthHandler) assignRole(userID uint, orgID uint, roleName string) error {
+	_, err := h.enforcer.AddGroupingPolicy(utils.UintToString(userID), utils.UintToString(orgID), roleName)
+	return err
 }
 
 func (h *AuthHandler) Logout(c echo.Context) error {
@@ -133,36 +125,19 @@ func (h *AuthHandler) Logout(c echo.Context) error {
 func (h *AuthHandler) CheckAuth(c echo.Context) error {
 	cookie, err := c.Cookie(constants.TokenCookieName)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusUnauthorized, middleware.ErrorResponse{
-			Code:    http.StatusUnauthorized,
-			Message: constants.NotAuthenticated,
-		})
+		return h.respondWithError(c, http.StatusUnauthorized, constants.NotAuthenticated, err)
 	}
 
 	token := cookie.Value
 	userResp, err := h.authService.VerifyToken(token)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusUnauthorized, middleware.ErrorResponse{
-			Code:    http.StatusUnauthorized,
-			Message: constants.InvalidToken,
-		})
+		return h.respondWithError(c, http.StatusUnauthorized, constants.InvalidToken, err)
 	}
 	utils.SetCookie(c, token, 24*time.Hour)
 
-	roles, err := h.enforcer.GetRolesForUser(userResp.Email)
+	roles, permissions, err := h.getUserRolesAndPermissions(userResp.ID, userResp.SelectedOrg)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, middleware.ErrorResponse{
-			Code:    http.StatusInternalServerError,
-			Message: constants.FailedRetrieveRoles,
-		})
-	}
-
-	permissions, err := h.enforcer.GetImplicitPermissionsForUser(userResp.Email)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, middleware.ErrorResponse{
-			Code:    http.StatusInternalServerError,
-			Message: constants.FailedRetrievePermissions,
-		})
+		return h.respondWithError(c, http.StatusInternalServerError, constants.FailedRetrieveRoles, err)
 	}
 
 	return c.JSON(http.StatusOK, response.GenericResponse{
@@ -174,27 +149,18 @@ func (h *AuthHandler) CheckAuth(c echo.Context) error {
 func (h *AuthHandler) GetUserOrganizations(c echo.Context) error {
 	cookie, err := c.Cookie(constants.TokenCookieName)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusUnauthorized, middleware.ErrorResponse{
-			Code:    http.StatusUnauthorized,
-			Message: constants.NotAuthenticated,
-		})
+		return h.respondWithError(c, http.StatusUnauthorized, constants.NotAuthenticated, err)
 	}
 
 	token := cookie.Value
 	userResp, err := h.authService.VerifyToken(token)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusUnauthorized, middleware.ErrorResponse{
-			Code:    http.StatusUnauthorized,
-			Message: constants.InvalidToken,
-		})
+		return h.respondWithError(c, http.StatusUnauthorized, constants.InvalidToken, err)
 	}
 
 	orgs, err := h.authService.GetUserOrganizations(userResp.ID)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, middleware.ErrorResponse{
-			Code:    http.StatusInternalServerError,
-			Message: constants.FailedRetrieveOrganizations,
-		})
+		return h.respondWithError(c, http.StatusInternalServerError, constants.FailedRetrieveOrganizations, err)
 	}
 
 	return c.JSON(http.StatusOK, response.GenericResponse{
@@ -206,38 +172,26 @@ func (h *AuthHandler) GetUserOrganizations(c echo.Context) error {
 func (h *AuthHandler) SwitchOrganization(c echo.Context) error {
 	cookie, err := c.Cookie(constants.TokenCookieName)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusUnauthorized, middleware.ErrorResponse{
-			Code:    http.StatusUnauthorized,
-			Message: constants.NotAuthenticated,
-		})
+		return h.respondWithError(c, http.StatusUnauthorized, constants.NotAuthenticated, err)
 	}
 
 	token := cookie.Value
 	userResp, err := h.authService.VerifyToken(token)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusUnauthorized, middleware.ErrorResponse{
-			Code:    http.StatusUnauthorized,
-			Message: constants.InvalidToken,
-		})
+		return h.respondWithError(c, http.StatusUnauthorized, constants.InvalidToken, err)
 	}
 
 	var switchOrgReq struct {
 		OrgID uint `json:"org_id"`
 	}
 	if err := c.Bind(&switchOrgReq); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, middleware.ErrorResponse{
-			Code:    http.StatusBadRequest,
-			Message: constants.InvalidRequestDetails,
-		})
+		return h.respondWithError(c, http.StatusBadRequest, constants.InvalidRequestDetails, err)
 	}
 
 	// Generate a new token with the new organization context
 	newToken, err := h.authService.SwitchOrganization(userResp.ID, switchOrgReq.OrgID)
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, middleware.ErrorResponse{
-			Code:    http.StatusInternalServerError,
-			Message: constants.FailedGenerateToken,
-		})
+		return h.respondWithError(c, http.StatusInternalServerError, constants.FailedGenerateToken, err)
 	}
 
 	utils.SetCookie(c, newToken, 24*time.Hour)
@@ -245,5 +199,14 @@ func (h *AuthHandler) SwitchOrganization(c echo.Context) error {
 	return c.JSON(http.StatusOK, response.GenericResponse{
 		Message: constants.OrganizationSwitched,
 		Data:    newToken,
+	})
+}
+
+// Helper method to respond with error and log it
+func (h *AuthHandler) respondWithError(c echo.Context, statusCode int, message string, err error) error {
+	c.Logger().Error(err)
+	return echo.NewHTTPError(statusCode, middleware.ErrorResponse{
+		Code:    statusCode,
+		Message: message,
 	})
 }
