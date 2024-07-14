@@ -27,11 +27,11 @@ const (
 	FailedRetrieveOrganizations     = "Failed to retrieve organizations"
 
 	// Middleware Messages
-	AuthorizationHeaderRequired = "Authorization header is required"
-	InvalidAuthorizationHeader  = "Authorization header format must be 'Bearer {token}'"
-	InvalidOrExpiredToken       = "Invalid or expired JWT token"
-	UserClaimsNotAvailable      = "User claims are not available"
-	TokenNotFound               = "Token not found in context"
+	AuthorizationHeaderRequired = "authorization header is required"
+	InvalidAuthorizationHeader  = "authorization header format must be 'Bearer {token}'"
+	InvalidOrExpiredToken       = "invalid or expired JWT token"
+	UserClaimsNotAvailable      = "user claims are not available"
+	TokenNotFound               = "token not found in context"
 
 	FailedAssignRole          = "Failed to assign role"
 	FailedRetrieveRoles       = "Failed to retrieve role"

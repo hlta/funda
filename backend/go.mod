@@ -3,13 +3,13 @@ module funda
 go 1.22.2
 
 require (
+	github.com/casbin/casbin/v2 v2.97.0
+	github.com/casbin/gorm-adapter/v3 v3.25.0
 	github.com/cosmtrek/air v1.51.0
 	github.com/labstack/echo/v4 v4.12.0
 )
 
 require (
-	github.com/casbin/casbin/v2 v2.97.0 // indirect
-	github.com/casbin/gorm-adapter/v3 v3.25.0 // indirect
 	github.com/casbin/govaluate v1.1.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/glebarez/go-sqlite v1.20.3 // indirect

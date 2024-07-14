@@ -26,7 +26,7 @@ func NewOrganizationHandler(orgService *service.OrganizationService, enforcer *c
 	return &OrganizationHandler{orgService: orgService, enforcer: enforcer}
 }
 
-func (h *OrganizationHandler) Register(e *echo.Echo) {
+func (h *OrganizationHandler) Register(e *echo.Group) {
 	e.POST(constants.CreateOrganizationRoute, h.CreateOrganization)
 	e.GET(constants.GetOrganizationRoute, h.GetOrganization, middleware.OrganizationOwnerMiddleware(h.orgService))
 	e.PUT(constants.UpdateOrganizationRoute, h.UpdateOrganization, middleware.OrganizationOwnerMiddleware(h.orgService))

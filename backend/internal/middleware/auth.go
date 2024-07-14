@@ -15,10 +15,6 @@ import (
 func OAuthMiddleware(config configs.OAuthConfig) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			// Allow unauthenticated access to login and signup endpoints.
-			if isAuthOptional(c.Path()) {
-				return next(c)
-			}
 
 			authHeader := c.Request().Header.Get("Authorization")
 			if authHeader == "" {
@@ -40,16 +36,6 @@ func OAuthMiddleware(config configs.OAuthConfig) echo.MiddlewareFunc {
 
 			return next(c)
 		}
-	}
-}
-
-// isAuthOptional checks if the request path is excluded from authentication.
-func isAuthOptional(path string) bool {
-	switch path {
-	case constants.LoginRoute, constants.SignupRoute, constants.CheckAuthRoute, constants.LogoutRoute, constants.GetUserOrganizationsRoute, constants.SwitchOrgRoute:
-		return true
-	default:
-		return false
 	}
 }
 
