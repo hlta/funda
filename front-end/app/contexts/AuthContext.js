@@ -31,7 +31,7 @@ const authReducer = (state, action) => {
                 selectedOrg: action.payload.user.selectedOrg,
                 user: action.payload.user || null,
                 roles: action.payload.roles || [],
-                token: action.payload.user.token || null,
+                token: action.payload.token || null,
                 permissions: action.payload.permissions || [],
                 loading: false,
             };
@@ -106,14 +106,15 @@ export const AuthProvider = ({ children }) => {
     const login = async (credentials) => {
         setLoading(true);
         try {
-            const user = await authService.login(credentials);
-            if (user) {
+            const authData = await authService.login(credentials);
+            if (authData) {
                 dispatch({
                     type: actionTypes.LOGIN,
                     payload: {
-                        user,
-                        roles: user.roles,
-                        permissions: user.permissions,
+                        token: authData.token,
+                        user: authData.user,
+                        roles: authData.roles,
+                        permissions: authData.permissions,
                     },
                 });
                 const organizations = await authService.getUserOrganizations();
