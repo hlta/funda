@@ -83,7 +83,3 @@ func (r *GormUserRepository) List(offset, limit int) ([]*model.User, error) {
 	}
 	return users, nil
 }
-
-func (r *GormUserRepository) LoadDefaultOrganization(user *model.User) error {
-	return r.DB.Preload("DefaultOrganization").First(user, user.ID).Error
-}

@@ -25,7 +25,6 @@ type UserRepository interface {
 	RetrieveByEmail(email string) (*User, error) // Retrieve a user by email
 	Update(user *User) error                     // Update a user
 	Delete(id uint) error                        // Delete a user by ID
-	LoadDefaultOrganization(user *User) error    // Load the default organization for the user
 	CreateWithTx(tx *gorm.DB, user *User) error
 	UpdateWithTx(tx *gorm.DB, user *User) error
 }

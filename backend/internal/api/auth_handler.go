@@ -89,7 +89,7 @@ func (h *AuthHandler) Login(c echo.Context) error {
 		return h.respondWithError(c, http.StatusUnauthorized, constants.InvalidCredentials, err)
 	}
 
-	roles, permissions, err := h.getUserRolesAndPermissions(userResp.ID, userResp.Organization.ID)
+	roles, permissions, err := h.getUserRolesAndPermissions(userResp.ID, userResp.SelectedOrg)
 	if err != nil {
 		return h.respondWithError(c, http.StatusInternalServerError, constants.FailedRetrieveRoles, err)
 	}

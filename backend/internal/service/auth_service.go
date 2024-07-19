@@ -76,11 +76,6 @@ func (s *AuthService) Login(email, password string) (*response.UserResponse, *st
 		return nil, nil, err
 	}
 
-	if err := s.userService.LoadDefaultOrganization(user); err != nil {
-		utils.LogError(s.log, "loading default organization", err)
-		return nil, nil, err
-	}
-
 	token, err := auth.GenerateToken(user, user.DefaultOrganizationID)
 	if err != nil {
 		utils.LogError(s.log, "generating token", err)

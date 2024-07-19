@@ -13,9 +13,5 @@ func ToUserResponse(user model.User, selectedOrg uint) response.UserResponse {
 		LastName:    user.LastName,
 		Email:       user.Email,
 		SelectedOrg: selectedOrg,
-		Organization: response.OrganizationResponse{
-			ID:   user.DefaultOrganization.ID,
-			Name: user.DefaultOrganization.Name,
-		},
 	}
 }

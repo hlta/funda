@@ -99,7 +99,3 @@ func (s *UserService) DeleteUser(id uint) error {
 	s.log.WithField("action", "user deleted").Info("User successfully deleted")
 	return nil
 }
-
-func (s *UserService) LoadDefaultOrganization(user *model.User) error {
-	return s.repo.LoadDefaultOrganization(user)
-}
