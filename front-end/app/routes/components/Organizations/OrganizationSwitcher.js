@@ -6,13 +6,14 @@ import {
     DropdownItem,
     Modal,
     ModalHeader,
-    ModalBody
+    ModalBody,
+    Alert
 } from 'reactstrap';
 import PropTypes from 'prop-types';
 import { useOrganizations } from '../../../hooks/useOrganizations';
 import AddOrganizationForm from './AddOrganizationForm';
 
-const OrganizationItem = ({ org, selected , onSelect }) => (
+const OrganizationItem = ({ org, selected, onSelect }) => (
     <DropdownItem
         key={org.id}
         onClick={() => selected !== org.id && onSelect(org)}
@@ -44,17 +45,31 @@ AddNewOrganizationItem.propTypes = {
 const OrganizationSwitcher = () => {
     const { orgs, selected, switchOrg, addOrg } = useOrganizations();
     const [modalOpen, setModalOpen] = useState(false);
+    const [error, setError] = useState(null);
 
-    const toggleModal = () => setModalOpen(prevState => !prevState);
+    const toggleModal = () => {
+        setError(null); // Clear error message when toggling modal
+        setModalOpen(prevState => !prevState);
+    };
 
     const handleOrgSwitch = async (org) => {
-        await switchOrg(org.id);
+        try {
+            await switchOrg(org.id);
+            setError(null); // Clear error message on success
+        } catch (err) {
+            setError('Failed to switch organization.');
+        }
     };
 
     const handleAddOrganization = async (data) => {
-        const response = await addOrg(data);
-        toggleModal();
-        switchOrg(response.id);
+        try {
+            const response = await addOrg(data);
+            toggleModal();
+            await switchOrg(response.id);
+            setError(null); // Clear error message on success
+        } catch (err) {
+            setError('Failed to add new organization.');
+        }
     };
 
     const selectedOrgName = orgs.find(org => org.id === selected)?.name || 'Default Organization';
@@ -80,9 +95,12 @@ const OrganizationSwitcher = () => {
                 </DropdownMenu>
             </UncontrolledButtonDropdown>
 
+            {error && <Alert color="danger">{error}</Alert>} {/* Display error message */}
+
             <Modal isOpen={modalOpen} toggle={toggleModal}>
                 <ModalHeader toggle={toggleModal}>Add New Organization</ModalHeader>
                 <ModalBody>
+                    {error && <Alert color="danger">{error}</Alert>} {/* Display error message inside modal */}
                     <AddOrganizationForm onSubmit={handleAddOrganization} />
                 </ModalBody>
             </Modal>

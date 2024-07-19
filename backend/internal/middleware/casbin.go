@@ -3,6 +3,7 @@ package middleware
 import (
 	"funda/internal/auth"
 	"funda/internal/constants"
+	"funda/internal/logger"
 	"net/http"
 	"strconv"
 
@@ -11,12 +12,13 @@ import (
 )
 
 // CasbinMiddleware returns an Echo middleware that enforces Casbin authorization.
-func CasbinMiddleware(enforcer *casbin.Enforcer) echo.MiddlewareFunc {
+func CasbinMiddleware(enforcer *casbin.Enforcer, log logger.Logger) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			// Extract user and other context information
-			user, ok := c.Get(constants.UserClaimsKey).(auth.Claims)
+			user, ok := c.Get(constants.UserClaimsKey).(*auth.Claims)
 			if !ok {
+				log.WithField("path", c.Path()).Warn(constants.UserNotFoundInContext)
 				return c.JSON(http.StatusForbidden, map[string]interface{}{
 					"message": constants.UserNotFoundInContext,
 				})
@@ -24,6 +26,7 @@ func CasbinMiddleware(enforcer *casbin.Enforcer) echo.MiddlewareFunc {
 
 			org := strconv.FormatUint(uint64(user.OrgID), 10)
 			if org == "0" {
+				log.WithField("path", c.Path()).Warn(constants.OrganizationNotFoundInRequest)
 				return c.JSON(http.StatusForbidden, map[string]interface{}{
 					"message": constants.OrganizationNotFoundInRequest,
 				})
@@ -35,6 +38,10 @@ func CasbinMiddleware(enforcer *casbin.Enforcer) echo.MiddlewareFunc {
 			// Get roles for the user from Casbin
 			roles, err := enforcer.GetRolesForUser(user.ID, org)
 			if err != nil {
+				log.WithFields(map[string]interface{}{
+					"user":  user.UserID,
+					"error": err,
+				}).Error(constants.ErrorRetrievingRolesForUser)
 				return c.JSON(http.StatusInternalServerError, map[string]interface{}{
 					"message": constants.ErrorRetrievingRolesForUser,
 				})
@@ -45,6 +52,10 @@ func CasbinMiddleware(enforcer *casbin.Enforcer) echo.MiddlewareFunc {
 			for _, role := range roles {
 				allowed, err = enforcer.Enforce(role, org, path, method)
 				if err != nil {
+					log.WithFields(map[string]interface{}{
+						"user":  user.UserID,
+						"error": err,
+					}).Error(constants.ErrorDuringAuthorization)
 					return c.JSON(http.StatusInternalServerError, map[string]interface{}{
 						"message": constants.ErrorDuringAuthorization,
 					})
@@ -55,11 +66,21 @@ func CasbinMiddleware(enforcer *casbin.Enforcer) echo.MiddlewareFunc {
 			}
 
 			if !allowed {
+				log.WithFields(map[string]interface{}{
+					"user":   user.UserID,
+					"path":   c.Path(),
+					"method": method,
+				}).Warn(constants.Forbidden)
 				return c.JSON(http.StatusForbidden, map[string]interface{}{
 					"message": constants.Forbidden,
 				})
 			}
 
+			log.WithFields(map[string]interface{}{
+				"user":   user.UserID,
+				"path":   c.Path(),
+				"method": method,
+			}).Info("access granted")
 			return next(c)
 		}
 	}

@@ -1,6 +1,8 @@
 package model
 
 import (
+	"errors"
+
 	"gorm.io/gorm"
 )
 
@@ -21,3 +23,6 @@ type OrganizationRepository interface {
 	Update(org *Organization) error
 	Delete(id uint) error
 }
+
+// Predefined errors to handle specific scenarios
+var ErrOrgExists = errors.New("organization already exists")

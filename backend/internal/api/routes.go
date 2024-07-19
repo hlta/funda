@@ -44,8 +44,8 @@ func registerPublicRoutes(e *echo.Echo, authHandler *AuthHandler) {
 // registerProtectedRoutes registers routes that require authentication
 func registerProtectedRoutes(e *echo.Echo, deps *Dependencies, handlers *Handlers) {
 	protectedRoutes := e.Group("/api")
-	protectedRoutes.Use(middleware.OAuthMiddleware(deps.Config.OAuth))
-	protectedRoutes.Use(middleware.CasbinMiddleware(deps.Enforcer))
+	protectedRoutes.Use(middleware.OAuthMiddleware(deps.Config.OAuth, deps.Logger))
+	protectedRoutes.Use(middleware.CasbinMiddleware(deps.Enforcer, deps.Logger))
 
 	handlers.OrganizationHandler.Register(protectedRoutes)
 }

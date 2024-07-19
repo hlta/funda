@@ -11,7 +11,7 @@ func AddPredefinedRolesAndPermissions(enforcer *casbin.Enforcer, orgID uint) err
 
 	// Predefined roles and permissions
 	predefinedPolicies := [][]string{
-		{"admin", org, "*", "*", "*"},
+		{"admin", org, "*", "*"},
 		{"standard_user", org, "/invoices", "GET"},
 		{"standard_user", org, "/invoices", "POST"},
 		{"standard_user", org, "/invoices/:id", "PUT"},
