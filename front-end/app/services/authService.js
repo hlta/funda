@@ -47,12 +47,7 @@ export const checkAuth = async () => {
         });
         const data = await response.json();
         if (response.ok) {
-            return {
-                isAuthenticated: true,
-                user: data.data.user, 
-                roles: data.data.roles, 
-                permissions: data.data.permissions, 
-            };
+            return data.data;
         } else {
             return { isAuthenticated: false, user: null };
         }
