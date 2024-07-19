@@ -1,7 +1,10 @@
 package middleware
 
 import (
+	"funda/internal/auth"
+	"funda/internal/constants"
 	"net/http"
+	"strconv"
 
 	"github.com/casbin/casbin/v2"
 	"github.com/labstack/echo/v4"
@@ -12,34 +15,48 @@ func CasbinMiddleware(enforcer *casbin.Enforcer) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			// Extract user and other context information
-			user, ok := c.Get("user").(string)
+			user, ok := c.Get(constants.UserClaimsKey).(auth.Claims)
 			if !ok {
 				return c.JSON(http.StatusForbidden, map[string]interface{}{
-					"message": "user not found in context",
+					"message": constants.UserNotFoundInContext,
 				})
 			}
 
-			org := c.Param("org")
-			if org == "" {
+			org := strconv.FormatUint(uint64(user.OrgID), 10)
+			if org == "0" {
 				return c.JSON(http.StatusForbidden, map[string]interface{}{
-					"message": "organization not found in request",
+					"message": constants.OrganizationNotFoundInRequest,
 				})
 			}
 
 			path := c.Request().URL.Path
 			method := c.Request().Method
 
-			// Enforce Casbin policies
-			allowed, err := enforcer.Enforce(user, org, path, method)
+			// Get roles for the user from Casbin
+			roles, err := enforcer.GetRolesForUser(user.ID, org)
 			if err != nil {
 				return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-					"message": "error occurred during authorization",
+					"message": constants.ErrorRetrievingRolesForUser,
 				})
+			}
+
+			// Check permissions for each role
+			allowed := false
+			for _, role := range roles {
+				allowed, err = enforcer.Enforce(role, org, path, method)
+				if err != nil {
+					return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+						"message": constants.ErrorDuringAuthorization,
+					})
+				}
+				if allowed {
+					break
+				}
 			}
 
 			if !allowed {
 				return c.JSON(http.StatusForbidden, map[string]interface{}{
-					"message": "forbidden",
+					"message": constants.Forbidden,
 				})
 			}
 

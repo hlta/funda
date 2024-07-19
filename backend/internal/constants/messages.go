@@ -37,4 +37,11 @@ const (
 	FailedAssignRole          = "Failed to assign role"
 	FailedRetrieveRoles       = "Failed to retrieve role"
 	FailedRetrievePermissions = "Failed to retrieve permissions"
+
+	// New Middleware Messages
+	UserNotFoundInContext         = "user not found in context"
+	OrganizationNotFoundInRequest = "organization not found in request"
+	ErrorDuringAuthorization      = "error occurred during authorization"
+	Forbidden                     = "forbidden"
+	ErrorRetrievingRolesForUser   = "error retrieving roles for user"
 )

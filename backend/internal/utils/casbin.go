@@ -11,22 +11,21 @@ func AddPredefinedRolesAndPermissions(enforcer *casbin.Enforcer, orgID uint) err
 
 	// Predefined roles and permissions
 	predefinedPolicies := [][]string{
-		{"admin", org, "*", "*"},
-		{"standard_user", org, "invoices", "view"},
-		{"standard_user", org, "invoices", "create"},
-		{"standard_user", org, "invoices", "edit"},
-		{"standard_user", org, "invoices", "delete"},
-		{"invoice_manager", org, "invoices", "view"},
-		{"invoice_manager", org, "invoices", "create"},
-		{"invoice_manager", org, "invoices", "edit"},
-		{"invoice_manager", org, "invoices", "delete"},
-		{"bank_reconciler", org, "bank_transactions", "view"},
-		{"bank_reconciler", org, "bank_transactions", "reconcile"},
-		{"payroll_manager", org, "payroll", "view"},
-		{"payroll_manager", org, "payroll", "process"},
-		{"reports_viewer", org, "reports", "view"},
-		{"reports_viewer", org, "reports", "generate"},
-		{"admin", org, "users", "manage"},
+		{"admin", org, "*", "*", "*"},
+		{"standard_user", org, "/invoices", "GET"},
+		{"standard_user", org, "/invoices", "POST"},
+		{"standard_user", org, "/invoices/:id", "PUT"},
+		{"standard_user", org, "/invoices/:id", "DELETE"},
+		{"invoice_manager", org, "/invoices", "GET"},
+		{"invoice_manager", org, "/invoices", "POST"},
+		{"invoice_manager", org, "/invoices/:id", "PUT"},
+		{"invoice_manager", org, "/invoices/:id", "DELETE"},
+		{"bank_reconciler", org, "/bank_transactions", "GET"},
+		{"bank_reconciler", org, "/bank_transactions/reconcile", "POST"},
+		{"payroll_manager", org, "/payroll", "GET"},
+		{"payroll_manager", org, "/payroll/process", "POST"},
+		{"reports_viewer", org, "/reports", "GET"},
+		{"reports_viewer", org, "/reports/generate", "POST"},
 	}
 
 	// Add predefined policies to the enforcer
