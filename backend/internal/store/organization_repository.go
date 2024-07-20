@@ -1,6 +1,7 @@
 package store
 
 import (
+	"errors"
 	"funda/internal/model"
 
 	"gorm.io/gorm"
@@ -15,8 +16,15 @@ func NewGormOrganizationRepository(db *gorm.DB) *GormOrganizationRepository {
 	return &GormOrganizationRepository{DB: db}
 }
 
+// CreateWithTx creates a new organization with a transaction and handles duplicate name errors.
 func (r *GormOrganizationRepository) CreateWithTx(tx *gorm.DB, org *model.Organization) error {
-	return tx.Create(org).Error
+	if err := tx.Create(org).Error; err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return model.ErrOrgExists
+		}
+		return err
+	}
+	return nil
 }
 
 func (r *GormOrganizationRepository) RetrieveByID(id uint) (*model.Organization, error) {

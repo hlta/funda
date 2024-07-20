@@ -25,4 +25,4 @@ type OrganizationRepository interface {
 }
 
 // Predefined errors to handle specific scenarios
-var ErrOrgExists = errors.New("organization already exists")
+var ErrOrgExists = errors.New("organization name already exists")
