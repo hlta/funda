@@ -1,8 +1,6 @@
 package model
 
 import (
-	"errors"
-
 	"gorm.io/gorm"
 )
 
@@ -28,6 +26,3 @@ type UserRepository interface {
 	CreateWithTx(tx *gorm.DB, user *User) error
 	UpdateWithTx(tx *gorm.DB, user *User) error
 }
-
-// Predefined errors to handle specific scenarios
-var ErrEmailExists = errors.New("email already exists")

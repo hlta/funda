@@ -57,7 +57,12 @@ func (h *AuthHandler) Signup(c echo.Context) error {
 	}
 
 	if err := h.authService.Signup(user, signupReq.OrganizationName); err != nil {
-		return h.respondWithError(c, http.StatusInternalServerError, constants.FailedCreateUserAndOrg, err)
+		switch err {
+		case model.ErrEmailExists, model.ErrOrgExists:
+			return err
+		default:
+			return h.respondWithError(c, http.StatusInternalServerError, constants.FailedCreateUserAndOrg, err)
+		}
 	}
 
 	// Add predefined roles and permissions for the new organization

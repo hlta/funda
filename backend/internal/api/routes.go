@@ -27,6 +27,7 @@ func SetupRoutes(e *echo.Echo, deps *Dependencies) {
 	e.Use(logger.EchoLogger(logger.EchoLoggerConfig{Logger: deps.Logger}))
 	e.Use(echeMiddleware.Recover())
 	e.Use(middleware.CORSMiddleware(deps.Config.CORS))
+	e.Use(middleware.ErrorHandlingMiddleware)
 
 	// Initialize Handlers
 	handlers := NewHandlers(deps.AuthService, deps.OrgService, deps.Enforcer)
