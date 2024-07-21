@@ -57,6 +57,9 @@ func (h *OrganizationHandler) CreateOrganization(c echo.Context) error {
 	}
 
 	if err := h.orgService.CreateOrganization(org); err != nil {
+		if err == model.ErrOrgExists {
+			return err
+		}
 		return newHTTPError(http.StatusInternalServerError, constants.FailedCreateOrganization)
 	}
 
