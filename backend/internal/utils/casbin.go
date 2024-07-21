@@ -1,13 +1,11 @@
 package utils
 
 import (
-	"strconv"
-
 	"github.com/casbin/casbin/v2"
 )
 
 func AddPredefinedRolesAndPermissions(enforcer *casbin.Enforcer, orgID uint) error {
-	org := strconv.FormatUint(uint64(orgID), 10)
+	org := UintToString(orgID)
 
 	// Predefined roles and permissions
 	predefinedPolicies := [][]string{

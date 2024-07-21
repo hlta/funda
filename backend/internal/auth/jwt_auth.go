@@ -4,6 +4,7 @@ import (
 	"errors"
 	"funda/configs"
 	"funda/internal/model"
+	"funda/internal/utils"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -35,6 +36,7 @@ func GenerateToken(user *model.User, orgID uint) (string, error) {
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
 		},
 	}
+	claims.ID = utils.UintToString(user.ID)
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(jwtKey)

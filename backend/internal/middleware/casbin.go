@@ -4,8 +4,8 @@ import (
 	"funda/internal/auth"
 	"funda/internal/constants"
 	"funda/internal/logger"
+	"funda/internal/utils"
 	"net/http"
-	"strconv"
 
 	"github.com/casbin/casbin/v2"
 	"github.com/labstack/echo/v4"
@@ -24,7 +24,7 @@ func CasbinMiddleware(enforcer *casbin.Enforcer, log logger.Logger) echo.Middlew
 				})
 			}
 
-			org := strconv.FormatUint(uint64(user.OrgID), 10)
+			org := utils.UintToString(user.OrgID)
 			if org == "0" {
 				log.WithField("path", c.Path()).Warn(constants.OrganizationNotFoundInRequest)
 				return c.JSON(http.StatusForbidden, map[string]interface{}{
@@ -36,7 +36,7 @@ func CasbinMiddleware(enforcer *casbin.Enforcer, log logger.Logger) echo.Middlew
 			method := c.Request().Method
 
 			// Get roles for the user from Casbin
-			roles, err := enforcer.GetRolesForUser(user.ID, org)
+			roles, err := enforcer.GetRolesForUser(utils.UintToString(user.UserID), org)
 			if err != nil {
 				log.WithFields(map[string]interface{}{
 					"user":  user.UserID,
@@ -46,7 +46,6 @@ func CasbinMiddleware(enforcer *casbin.Enforcer, log logger.Logger) echo.Middlew
 					"message": constants.ErrorRetrievingRolesForUser,
 				})
 			}
-
 			// Check permissions for each role
 			allowed := false
 			for _, role := range roles {
