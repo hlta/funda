@@ -40,7 +40,7 @@ func (h *OrganizationHandler) CreateOrganization(c echo.Context) error {
 	}
 
 	orgReq := new(struct {
-		Name          string `json:"name" validate:"required"`
+		Name          string `json:"organizationName" validate:"required"`
 		Industry      string `json:"industry"`
 		GSTRegistered bool   `json:"gst_registered"`
 	})

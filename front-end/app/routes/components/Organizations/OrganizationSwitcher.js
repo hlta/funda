@@ -46,9 +46,11 @@ const OrganizationSwitcher = () => {
     const { orgs, selected, switchOrg, addOrg } = useOrganizations();
     const [modalOpen, setModalOpen] = useState(false);
     const [error, setError] = useState(null);
+    const [serverErrors, setServerErrors] = useState({});
 
     const toggleModal = () => {
         setError(null); // Clear error message when toggling modal
+        setServerErrors({}); // Clear server errors when toggling modal
         setModalOpen(prevState => !prevState);
     };
 
@@ -67,9 +69,28 @@ const OrganizationSwitcher = () => {
             toggleModal();
             await switchOrg(response.id);
             setError(null); // Clear error message on success
+            setServerErrors({}); // Clear server errors on success
         } catch (err) {
-            setError('Failed to add new organization.');
+            if (err.response && err.response.data && err.response.data.errors) {
+                // If there are validation errors from the server, set them
+                const errors = err.response.data.errors.reduce((acc, error) => {
+                    acc[error.field] = error.message;
+                    return acc;
+                }, {});
+                setServerErrors(errors);
+            } else {
+                // If there is a different error, set a generic error message
+                setError('Failed to add new organization.');
+            }
         }
+    };
+
+    const clearServerErrors = (field) => {
+        setServerErrors((prevErrors) => {
+            const newErrors = { ...prevErrors };
+            delete newErrors[field];
+            return newErrors;
+        });
     };
 
     const selectedOrgName = orgs.find(org => org.id === selected)?.name || 'Default Organization';
@@ -101,7 +122,11 @@ const OrganizationSwitcher = () => {
                 <ModalHeader toggle={toggleModal}>Add New Organization</ModalHeader>
                 <ModalBody>
                     {error && <Alert color="danger">{error}</Alert>} {/* Display error message inside modal */}
-                    <AddOrganizationForm onSubmit={handleAddOrganization} />
+                    <AddOrganizationForm 
+                        onSubmit={handleAddOrganization} 
+                        serverErrors={serverErrors}
+                        clearServerErrors={clearServerErrors}
+                    />
                 </ModalBody>
             </Modal>
         </>
