@@ -61,6 +61,7 @@ const authReducer = (state, action) => {
                 ...state,
                 selectedOrg: action.payload.orgId,
                 roles: action.payload.roles || [],
+                token: action.payload.token || null,
                 permissions: action.payload.permissions || [],
                 loading: false,
             };
@@ -135,10 +136,10 @@ export const AuthProvider = ({ children }) => {
     const switchOrganization = async (orgId) => {
         setLoading(true);
         try {
-            const { roles, permissions } = await authService.switchOrganization(orgId);
+            const { roles, permissions, token } = await authService.switchOrganization(orgId);
             dispatch({
                 type: actionTypes.SWITCH_ORGANIZATION,
-                payload: { orgId, roles, permissions },
+                payload: { orgId, roles, permissions, token },
             });
         } catch (error) {
             console.error('Switch organization error:', error);
