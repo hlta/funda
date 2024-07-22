@@ -82,24 +82,24 @@ func (s *AuthService) Login(email, password string) (*response.UserResponse, *st
 		return nil, nil, err
 	}
 
-	userResp := mapper.ToUserResponse(*user, user.DefaultOrganizationID)
+	userResp := mapper.ToUserResponse(*user)
 	utils.LogSuccess(s.log, "user logged in", "Token successfully generated", user.ID)
 	return &userResp, &token, nil
 }
 
-func (s *AuthService) VerifyToken(tokenString string) (*response.UserResponse, error) {
+func (s *AuthService) VerifyToken(tokenString string) (*response.UserResponse, *uint, error) {
 	claims, err := auth.ValidateToken(tokenString)
 	if err != nil {
-		return nil, errors.New("invalid claims")
+		return nil, nil, errors.New("invalid claims")
 	}
 
 	user, err := s.userService.GetUserByID(claims.UserID)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	userResp := mapper.ToUserResponse(*user, claims.OrgID)
-	return &userResp, nil
+	userResp := mapper.ToUserResponse(*user)
+	return &userResp, &claims.OrgID, nil
 }
 
 func (s *AuthService) GetUserOrganizations(userID uint) ([]response.OrganizationResponse, error) {

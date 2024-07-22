@@ -94,7 +94,7 @@ func (h *AuthHandler) Login(c echo.Context) error {
 		return h.respondWithError(c, http.StatusUnauthorized, constants.InvalidCredentials, err)
 	}
 
-	roles, permissions, err := h.getUserRolesAndPermissions(userResp.ID, userResp.SelectedOrg)
+	roles, permissions, err := h.getUserRolesAndPermissions(userResp.ID, userResp.DefaultOrganizationID)
 	if err != nil {
 		return h.respondWithError(c, http.StatusInternalServerError, constants.FailedRetrieveRoles, err)
 	}
@@ -103,7 +103,7 @@ func (h *AuthHandler) Login(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response.GenericResponse{
 		Message: constants.LoginSuccessful,
-		Data:    mapper.ToAuthResponse(*userResp, *token, roles, permissions),
+		Data:    mapper.ToAuthResponse(*userResp, userResp.DefaultOrganizationID, *token, roles, permissions),
 	})
 }
 
@@ -137,20 +137,20 @@ func (h *AuthHandler) CheckAuth(c echo.Context) error {
 	}
 
 	token := cookie.Value
-	userResp, err := h.authService.VerifyToken(token)
+	userResp, selectedOrg, err := h.authService.VerifyToken(token)
 	if err != nil {
 		return h.respondWithError(c, http.StatusUnauthorized, constants.InvalidToken, err)
 	}
 	utils.SetCookie(c, token, 24*time.Hour)
 
-	roles, permissions, err := h.getUserRolesAndPermissions(userResp.ID, userResp.SelectedOrg)
+	roles, permissions, err := h.getUserRolesAndPermissions(userResp.ID, *selectedOrg)
 	if err != nil {
 		return h.respondWithError(c, http.StatusInternalServerError, constants.FailedRetrieveRoles, err)
 	}
 
 	return c.JSON(http.StatusOK, response.GenericResponse{
 		Message: constants.Authenticated,
-		Data:    mapper.ToAuthResponse(*userResp, token, roles, permissions),
+		Data:    mapper.ToAuthResponse(*userResp, *selectedOrg, token, roles, permissions),
 	})
 }
 
@@ -161,7 +161,7 @@ func (h *AuthHandler) GetUserOrganizations(c echo.Context) error {
 	}
 
 	token := cookie.Value
-	userResp, err := h.authService.VerifyToken(token)
+	userResp, _, err := h.authService.VerifyToken(token)
 	if err != nil {
 		return h.respondWithError(c, http.StatusUnauthorized, constants.InvalidToken, err)
 	}
@@ -184,7 +184,7 @@ func (h *AuthHandler) SwitchOrganization(c echo.Context) error {
 	}
 
 	token := cookie.Value
-	userResp, err := h.authService.VerifyToken(token)
+	userResp, _, err := h.authService.VerifyToken(token)
 	if err != nil {
 		return h.respondWithError(c, http.StatusUnauthorized, constants.InvalidToken, err)
 	}
@@ -211,7 +211,7 @@ func (h *AuthHandler) SwitchOrganization(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response.GenericResponse{
 		Message: constants.Authenticated,
-		Data:    mapper.ToAuthResponse(*userResp, newToken, roles, permissions),
+		Data:    mapper.ToAuthResponse(*userResp, switchOrgReq.OrgID, newToken, roles, permissions),
 	})
 
 }

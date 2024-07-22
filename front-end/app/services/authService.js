@@ -71,10 +71,6 @@ export const switchOrganization = async (orgId) => {
         body: JSON.stringify({ org_id: orgId }),
         credentials: 'include',
     });
-    const data = await handleError(response);
-    return {
-        token: data.data.token,
-        roles: data.data.roles, 
-        permissions: data.data.permissions, 
-    };
+    const responseData = await handleError(response);
+    return responseData.data;
 };
