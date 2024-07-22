@@ -204,10 +204,16 @@ func (h *AuthHandler) SwitchOrganization(c echo.Context) error {
 
 	utils.SetCookie(c, newToken, 24*time.Hour)
 
+	roles, permissions, err := h.getUserRolesAndPermissions(userResp.ID, switchOrgReq.OrgID)
+	if err != nil {
+		return h.respondWithError(c, http.StatusInternalServerError, constants.FailedRetrieveRoles, err)
+	}
+
 	return c.JSON(http.StatusOK, response.GenericResponse{
-		Message: constants.OrganizationSwitched,
-		Data:    newToken,
+		Message: constants.Authenticated,
+		Data:    mapper.ToAuthResponse(*userResp, newToken, roles, permissions),
 	})
+
 }
 
 // Helper method to respond with error and log it
