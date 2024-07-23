@@ -28,7 +28,7 @@ const authReducer = (state, action) => {
             return {
                 ...state,
                 isAuthenticated: !!action.payload.user,
-                selectedOrg: action.payload.user.selectedOrg,
+                selectedOrg: action.payload.selectedOrg,
                 user: action.payload.user || null,
                 roles: action.payload.roles || [],
                 token: action.payload.token || null,
@@ -59,7 +59,7 @@ const authReducer = (state, action) => {
         case actionTypes.SWITCH_ORGANIZATION:
             return {
                 ...state,
-                selectedOrg: action.payload.orgId,
+                selectedOrg: action.payload.selectedOrg,
                 roles: action.payload.roles || [],
                 token: action.payload.token || null,
                 permissions: action.payload.permissions || [],
@@ -115,6 +115,7 @@ export const AuthProvider = ({ children }) => {
                         token: authData.token,
                         user: authData.user,
                         roles: authData.roles,
+                        selectedOrg: authData.SelectedOrg,
                         permissions: authData.permissions,
                     },
                 });
@@ -139,7 +140,7 @@ export const AuthProvider = ({ children }) => {
             const { roles, permissions, token } = await authService.switchOrganization(orgId);
             dispatch({
                 type: actionTypes.SWITCH_ORGANIZATION,
-                payload: { orgId, roles, permissions, token },
+                payload: { selectedOrg:orgId, roles, permissions, token },
             });
         } catch (error) {
             console.error('Switch organization error:', error);
