@@ -8,7 +8,7 @@ import (
 
 	"github.com/casbin/casbin/v2"
 	"github.com/labstack/echo/v4"
-	echeMiddleware "github.com/labstack/echo/v4/middleware"
+	echoMiddleware "github.com/labstack/echo/v4/middleware"
 )
 
 // Dependencies holds all the dependencies for setting up routes
@@ -24,8 +24,8 @@ type Dependencies struct {
 // SetupRoutes initializes all the routes and their handlers
 func SetupRoutes(e *echo.Echo, deps *Dependencies) {
 	// Global Middleware
-	e.Use(logger.EchoLogger(logger.EchoLoggerConfig{Logger: deps.Logger}))
-	e.Use(echeMiddleware.Recover())
+	e.Use(middleware.RequestLogger(deps.Logger))
+	e.Use(echoMiddleware.Recover())
 	e.Use(middleware.CORSMiddleware(deps.Config.CORS))
 	e.Use(middleware.ErrorHandlingMiddleware)
 
