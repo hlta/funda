@@ -36,7 +36,18 @@ func initializeDatabase(config configs.Config, dbLogger logger.Logger) *gorm.DB 
 	}
 
 	dbLogger.Info("Auto-migrating database models")
-	if err := database.AutoMigrate(&model.User{}, &model.Organization{}, &model.UserOrganization{}); err != nil {
+	if err := database.AutoMigrate(
+		&model.Account{},
+		&model.Customer{},
+		&model.Expense{},
+		&model.Invoice{},
+		&model.Organization{},
+		&model.Payment{},
+		&model.Transaction{},
+		&model.UserOrganization{},
+		&model.User{},
+		&model.Vendor{},
+	); err != nil {
 		dbLogger.WithField("error", err).Fatal("Failed to auto-migrate")
 	}
 
