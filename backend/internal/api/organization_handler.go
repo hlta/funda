@@ -68,6 +68,11 @@ func (h *OrganizationHandler) CreateOrganization(c echo.Context) error {
 		return newHTTPError(http.StatusInternalServerError, constants.FailedToSetPermissions)
 	}
 
+	// Assign the admin role to the organization
+	if err := utils.AssignRole(h.enforcer, userClaims.UserID, org.ID, constants.AdminRoleName); err != nil {
+		return newHTTPError(http.StatusInternalServerError, constants.FailedUpdateOrganization)
+	}
+
 	return c.JSON(http.StatusOK, response.GenericResponse{
 		Message: constants.OrganizationCreatedSuccessfully,
 		Data:    mapper.ToOrganizationResponse(*org),

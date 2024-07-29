@@ -40,3 +40,12 @@ func AddPredefinedRolesAndPermissions(enforcer *casbin.Enforcer, orgID uint) err
 
 	return nil
 }
+
+// AssignRole assigns a role to a user within a specific organization.
+func AssignRole(enforcer *casbin.Enforcer, userID uint, orgID uint, roleName string) error {
+	_, err := enforcer.AddGroupingPolicy(UintToString(userID), roleName, UintToString(orgID))
+	if err != nil {
+		return err
+	}
+	return nil
+}

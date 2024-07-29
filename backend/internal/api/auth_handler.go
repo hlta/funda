@@ -71,7 +71,7 @@ func (h *AuthHandler) Signup(c echo.Context) error {
 	}
 
 	// Assign the admin role to the new user in their default organization
-	if err := h.assignRole(user.ID, user.DefaultOrganizationID, constants.AdminRoleName); err != nil {
+	if err := utils.AssignRole(h.enforcer, user.ID, user.DefaultOrganizationID, constants.AdminRoleName); err != nil {
 		return h.respondWithError(c, http.StatusInternalServerError, constants.FailedAssignRole, err)
 	}
 
@@ -116,11 +116,6 @@ func (h *AuthHandler) getUserRolesAndPermissions(userID uint, orgID uint) ([]str
 	}
 
 	return roles, permissions, nil
-}
-
-func (h *AuthHandler) assignRole(userID uint, orgID uint, roleName string) error {
-	_, err := h.enforcer.AddGroupingPolicy(utils.UintToString(userID), roleName, utils.UintToString(orgID))
-	return err
 }
 
 func (h *AuthHandler) Logout(c echo.Context) error {
