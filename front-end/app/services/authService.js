@@ -49,10 +49,10 @@ export const checkAuth = async () => {
         if (response.ok) {
             return data.data;
         } else {
-            return { isAuthenticated: false, user: null };
+            return { user: null };
         }
     } catch (error) {
-        return { isAuthenticated: false, user: null };
+        return { user: null };
     }
 };
 

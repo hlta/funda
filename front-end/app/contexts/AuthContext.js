@@ -87,9 +87,9 @@ export const AuthProvider = ({ children }) => {
     const checkAuth = useCallback(async () => {
         setLoading(true);
         try {
-            const { user, roles, permissions, token } = await authService.checkAuth();
+            const { user, roles, permissions, token, selectedOrg } = await authService.checkAuth();
             if (token) {
-                dispatch({ type: actionTypes.LOGIN, payload: { user, roles, permissions, token } });
+                dispatch({ type: actionTypes.LOGIN, payload: { user, roles, permissions, token, selectedOrg } });
                 const organizations = await authService.getUserOrganizations();
                 dispatch({ type: actionTypes.SET_ORGANIZATIONS, payload: organizations });
             } else {
