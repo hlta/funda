@@ -38,14 +38,21 @@ func (s *AuthService) Signup(user *model.User, orgName string) error {
 		return tx.Error
 	}
 
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			utils.LogError(s.log, "transaction panicked", r.(error))
+		}
+	}()
+
 	if err := s.hashPassword(user); err != nil {
 		tx.Rollback()
 		return err
 	}
 
 	if err := s.userService.CreateUserWithTx(tx, user); err != nil {
-		tx.Rollback()
 		utils.LogError(s.log, "creating user", err)
+		tx.Rollback()
 		return err
 	}
 

@@ -29,6 +29,7 @@ func NewOrganizationService(repo model.OrganizationRepository, userOrgRepo model
 	}
 }
 
+// CreateOrganizationWithTx creates an organization within a transaction.
 func (s *OrganizationService) CreateOrganizationWithTx(tx *gorm.DB, org *model.Organization) error {
 	if err := utils.ValidateOrganization(org); err != nil {
 		return err
@@ -37,6 +38,12 @@ func (s *OrganizationService) CreateOrganizationWithTx(tx *gorm.DB, org *model.O
 	// Create the organization within the transaction
 	if err := s.repo.CreateWithTx(tx, org); err != nil {
 		utils.LogError(s.log, "creating organization", err)
+		return err
+	}
+
+	// Seed accounts for the organization within the transaction
+	if err := seed.SeedAccountsForOrg(tx, org.ID); err != nil {
+		utils.LogError(s.log, "seeding accounts for organization", err)
 		return err
 	}
 
@@ -56,10 +63,6 @@ func (s *OrganizationService) CreateOrganizationWithTx(tx *gorm.DB, org *model.O
 
 // CreateOrganization handles the creation of a new organization.
 func (s *OrganizationService) CreateOrganization(org *model.Organization) error {
-	if err := utils.ValidateOrganization(org); err != nil {
-		return err
-	}
-
 	// Start a transaction
 	tx := s.db.Begin()
 	if tx.Error != nil {
@@ -67,27 +70,9 @@ func (s *OrganizationService) CreateOrganization(org *model.Organization) error 
 		return tx.Error
 	}
 
-	// Create the organization within the transaction
-	if err := s.repo.CreateWithTx(tx, org); err != nil {
+	// Create the organization with the transaction
+	if err := s.CreateOrganizationWithTx(tx, org); err != nil {
 		tx.Rollback()
-		utils.LogError(s.log, "creating organization", err)
-		return err
-	}
-
-	if err := seed.SeedAccountsForOrg(tx, org.ID); err != nil {
-		tx.Rollback()
-		utils.LogError(s.log, "seeding accounts for organization", err)
-		return err
-	}
-
-	// Add the owner to the organization within the transaction
-	userOrg := model.UserOrganization{
-		UserID:         org.OwnerID,
-		OrganizationID: org.ID,
-	}
-	if err := s.userOrgRepo.AddUserToOrganizationWithTx(tx, &userOrg); err != nil {
-		tx.Rollback()
-		utils.LogError(s.log, "adding user to organization", err)
 		return err
 	}
 
@@ -97,7 +82,6 @@ func (s *OrganizationService) CreateOrganization(org *model.Organization) error 
 		return err
 	}
 
-	utils.LogSuccess(s.log, "organization created", "Organization successfully created", org.OwnerID)
 	return nil
 }
 

@@ -3,12 +3,14 @@ package utils
 import (
 	"encoding/json"
 	"funda/internal/model"
-	"io/ioutil"
+	"os"
+	"path/filepath"
 )
 
 func LoadDefaultAccounts(orgID uint) ([]model.Account, error) {
 	var accounts []model.Account
-	data, err := ioutil.ReadFile("config/default_accounts.json")
+	configPath := filepath.Join("configs", "default_accounts.json")
+	data, err := os.ReadFile(configPath)
 	if err != nil {
 		return nil, err
 	}
