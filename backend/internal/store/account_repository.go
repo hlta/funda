@@ -11,6 +11,7 @@ type AccountRepository interface {
 	Update(account *model.Account) error
 	Delete(account *model.Account) error
 	FindById(id uint) (*model.Account, error)
+	FindByCodeAndOrg(code int, orgID uint) (*model.Account, error)
 	FindAll() ([]model.Account, error)
 }
 
@@ -37,6 +38,12 @@ func (r *accountRepository) Delete(account *model.Account) error {
 func (r *accountRepository) FindById(id uint) (*model.Account, error) {
 	var account model.Account
 	err := r.db.First(&account, id).Error
+	return &account, err
+}
+
+func (r *accountRepository) FindByCodeAndOrg(code int, orgID uint) (*model.Account, error) {
+	var account model.Account
+	err := r.db.Where("code = ? AND org_id = ?", code, orgID).First(&account).Error
 	return &account, err
 }
 

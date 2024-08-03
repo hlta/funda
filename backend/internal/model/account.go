@@ -17,17 +17,3 @@ type Account struct {
 	Transactions       []Transaction      `json:"transactions"`
 	TrackingCategories []TrackingCategory `gorm:"many2many:account_tracking_categories;"`
 }
-
-// TrackingCategory represents a category for tracking transactions.
-type TrackingCategory struct {
-	gorm.Model
-	Name    string           `json:"name"`
-	Options []TrackingOption `json:"options"`
-}
-
-// TrackingOption represents an option within a tracking category.
-type TrackingOption struct {
-	gorm.Model
-	TrackingCategoryID uint   `json:"tracking_category_id"`
-	Name               string `json:"name"`
-}

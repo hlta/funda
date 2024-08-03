@@ -5,6 +5,7 @@ import (
 	"funda/internal/mapper"
 	"funda/internal/model"
 	"funda/internal/response"
+	"funda/internal/seed"
 	"funda/internal/utils"
 
 	"gorm.io/gorm"
@@ -70,6 +71,12 @@ func (s *OrganizationService) CreateOrganization(org *model.Organization) error 
 	if err := s.repo.CreateWithTx(tx, org); err != nil {
 		tx.Rollback()
 		utils.LogError(s.log, "creating organization", err)
+		return err
+	}
+
+	if err := seed.SeedAccountsForOrg(tx, org.ID); err != nil {
+		tx.Rollback()
+		utils.LogError(s.log, "seeding accounts for organization", err)
 		return err
 	}
 

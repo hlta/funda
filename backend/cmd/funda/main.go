@@ -43,6 +43,8 @@ func initializeDatabase(config configs.Config, dbLogger logger.Logger) *gorm.DB 
 		&model.Invoice{},
 		&model.Organization{},
 		&model.Payment{},
+		&model.TrackingCategory{},
+		&model.TrackingOption{},
 		&model.Transaction{},
 		&model.UserOrganization{},
 		&model.User{},
