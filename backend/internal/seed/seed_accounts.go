@@ -1,18 +1,19 @@
 package seed
 
 import (
+	"funda/internal/logger"
 	"funda/internal/store"
 	"funda/internal/utils"
-	"log"
 
 	"gorm.io/gorm"
 )
 
-func SeedAccountsForOrg(db *gorm.DB, orgID uint) error {
+// SeedAccountsForOrg seeds default accounts for the specified organization ID.
+func SeedAccountsForOrg(db *gorm.DB, orgID uint, log logger.Logger) error {
 	accountRepo := store.NewAccountRepository(db)
 	defaultAccounts, err := utils.LoadDefaultAccounts(orgID)
 	if err != nil {
-		log.Printf("Error loading default accounts: %v", err)
+		log.WithField("orgID", orgID).Error("Error loading default accounts: ", err)
 		return err
 	}
 
@@ -20,7 +21,7 @@ func SeedAccountsForOrg(db *gorm.DB, orgID uint) error {
 		_, err := accountRepo.FindByCodeAndOrg(account.Code, orgID)
 		if err != nil && err == gorm.ErrRecordNotFound {
 			if err := accountRepo.Create(&account); err != nil {
-				log.Printf("Error seeding account %s: %v", account.Name, err)
+				log.WithField("account", account.Name).Error("Error seeding account: ", err)
 				return err
 			}
 		}

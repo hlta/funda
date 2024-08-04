@@ -11,6 +11,17 @@ import (
 	"gorm.io/gorm"
 )
 
+const (
+	errCreatingOrganization = "error creating organization"
+	errSeedingAccounts      = "error seeding accounts for organization"
+	errAddingUser           = "error adding user to organization"
+	successCreatingOrg      = "organization created successfully"
+	successUpdatingOrg      = "organization updated successfully"
+	successDeletingOrg      = "organization deleted successfully"
+	successRetrievingOrg    = "organization retrieved successfully"
+	successAddingUserToOrg  = "user added to organization successfully"
+)
+
 // OrganizationService provides organization management functionalities.
 type OrganizationService struct {
 	repo        model.OrganizationRepository
@@ -35,50 +46,53 @@ func (s *OrganizationService) CreateOrganizationWithTx(tx *gorm.DB, org *model.O
 		return err
 	}
 
-	// Create the organization within the transaction
+	logContext := s.log.WithField("orgID", org.ID)
+
 	if err := s.repo.CreateWithTx(tx, org); err != nil {
-		utils.LogError(s.log, "creating organization", err)
+		logContext.Error(errCreatingOrganization, err)
 		return err
 	}
 
-	// Seed accounts for the organization within the transaction
-	if err := seed.SeedAccountsForOrg(tx, org.ID); err != nil {
-		utils.LogError(s.log, "seeding accounts for organization", err)
+	if err := seed.SeedAccountsForOrg(tx, org.ID, s.log); err != nil {
+		logContext.Error(errSeedingAccounts, err)
 		return err
 	}
 
-	// Add the owner to the organization within the transaction
 	userOrg := model.UserOrganization{
 		UserID:         org.OwnerID,
 		OrganizationID: org.ID,
 	}
 	if err := s.userOrgRepo.AddUserToOrganizationWithTx(tx, &userOrg); err != nil {
-		utils.LogError(s.log, "adding user to organization", err)
+		logContext.Error(errAddingUser, err)
 		return err
 	}
 
-	utils.LogSuccess(s.log, "organization created", "Organization successfully created", org.OwnerID)
+	logContext.Info(successCreatingOrg)
 	return nil
 }
 
 // CreateOrganization handles the creation of a new organization.
 func (s *OrganizationService) CreateOrganization(org *model.Organization) error {
-	// Start a transaction
+	return s.withTransaction(func(tx *gorm.DB) error {
+		return s.CreateOrganizationWithTx(tx, org)
+	})
+}
+
+// withTransaction handles database transaction management.
+func (s *OrganizationService) withTransaction(fn func(tx *gorm.DB) error) error {
 	tx := s.db.Begin()
 	if tx.Error != nil {
-		utils.LogError(s.log, "starting transaction", tx.Error)
+		s.log.Error("starting transaction", tx.Error)
 		return tx.Error
 	}
 
-	// Create the organization with the transaction
-	if err := s.CreateOrganizationWithTx(tx, org); err != nil {
+	if err := fn(tx); err != nil {
 		tx.Rollback()
 		return err
 	}
 
-	// Commit the transaction
 	if err := tx.Commit().Error; err != nil {
-		utils.LogError(s.log, "committing transaction", err)
+		s.log.Error("committing transaction", err)
 		return err
 	}
 
@@ -89,10 +103,10 @@ func (s *OrganizationService) CreateOrganization(org *model.Organization) error 
 func (s *OrganizationService) GetOrganizationByID(id uint) (*response.OrganizationResponse, error) {
 	org, err := s.repo.RetrieveByID(id)
 	if err != nil {
-		utils.LogError(s.log, "retrieving organization by ID", err)
+		s.log.WithField("orgID", id).Error("retrieving organization by ID", err)
 		return nil, err
 	}
-	utils.LogSuccess(s.log, "organization retrieved", "Organization successfully retrieved", org.OwnerID)
+	s.log.WithField("orgID", id).Info(successRetrievingOrg)
 	orgResp := mapper.ToOrganizationResponse(*org)
 	return &orgResp, nil
 }
@@ -103,24 +117,24 @@ func (s *OrganizationService) UpdateOrganization(org *model.Organization) error 
 		return err
 	}
 	if err := s.repo.Update(org); err != nil {
-		utils.LogError(s.log, "updating organization", err)
+		s.log.WithField("orgID", org.ID).Error("updating organization", err)
 		return err
 	}
-	utils.LogSuccess(s.log, "organization updated", "Organization successfully updated", org.OwnerID)
+	s.log.WithField("orgID", org.ID).Info(successUpdatingOrg)
 	return nil
 }
 
 // DeleteOrganization removes an organization by its ID.
 func (s *OrganizationService) DeleteOrganization(userID uint, id uint) error {
 	if err := s.userOrgRepo.RemoveUserFromOrganization(userID, id); err != nil {
-		utils.LogError(s.log, "removing user from organization", err)
+		s.log.WithField("orgID", id).Error("removing user from organization", err)
 		return err
 	}
 	if err := s.repo.Delete(id); err != nil {
-		utils.LogError(s.log, "deleting organization", err)
+		s.log.WithField("orgID", id).Error("deleting organization", err)
 		return err
 	}
-	utils.LogSuccess(s.log, "organization deleted", "Organization successfully deleted", id)
+	s.log.WithField("orgID", id).Info(successDeletingOrg)
 	return nil
 }
 
@@ -135,6 +149,7 @@ func (s *OrganizationService) GetUserOrganizations(userID uint) ([]response.Orga
 	for _, userOrg := range userOrgs {
 		org, err := s.repo.RetrieveByID(userOrg.OrganizationID)
 		if err != nil {
+			s.log.WithField("orgID", userOrg.OrganizationID).Error("retrieving organization", err)
 			return nil, err
 		}
 		orgs = append(orgs, mapper.ToOrganizationResponse(*org))
@@ -150,9 +165,9 @@ func (s *OrganizationService) AddUserToOrganization(userID, orgID uint) error {
 	}
 
 	if err := s.userOrgRepo.AddUserToOrganizationWithTx(s.db, &userOrg); err != nil {
-		utils.LogError(s.log, "adding user to organization", err)
+		s.log.WithField("userID", userID).WithField("orgID", orgID).Error("adding user to organization", err)
 		return err
 	}
-	utils.LogSuccess(s.log, "user added to organization", "User successfully added to organization", userID)
+	s.log.WithField("userID", userID).WithField("orgID", orgID).Info(successAddingUserToOrg)
 	return nil
 }
