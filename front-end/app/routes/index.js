@@ -6,24 +6,10 @@ import {
 } from 'react-router';
 
 // ----------- Pages Imports ---------------
-import Analytics from './Dashboards/Analytics';
-import ProjectsDashboard from './Dashboards/Projects';
-import System from './Dashboards/System';
-import Monitor from './Dashboards/Monitor'; 
 import Financial from './Dashboards/Financial';
-import Stock from './Dashboards/Stock';
-import Reports from './Dashboards/Reports';
-
-import Widgets from './Widgets';
 
 import Cards from './Cards/Cards';
 import CardsHeaders from './Cards/CardsHeaders';
-
-import NavbarOnly from './Layouts/NavbarOnly';
-import SidebarDefault from './Layouts/SidebarDefault';
-import SidebarA from './Layouts/SidebarA';
-import DragAndDropLayout from './Layouts/DragAndDropLayout';
-import SidebarWithNavbar from './Layouts/SidebarWithNavbar';
 
 import Accordions from './Interface/Accordions';
 import Alerts from './Interface/Alerts';
@@ -107,8 +93,6 @@ import ProtectedRoute from './ProtectedRoute';
 import { DefaultNavbar } from './../layout/components/DefaultNavbar';
 import { DefaultSidebar } from './../layout/components/DefaultSidebar';
 
-import { SidebarANavbar } from './../layout/components/SidebarANavbar';
-import { SidebarASidebar } from './../layout/components/SidebarASidebar';
 
 
 
@@ -117,28 +101,12 @@ import { SidebarASidebar } from './../layout/components/SidebarASidebar';
 export const RoutedContent = () => {
     return (
             <Switch>
-                <Redirect from="/" to="/dashboards/projects" exact />
-                
-                <ProtectedRoute requiredPermissions={['View Reports']} path="/dashboards/analytics" exact component={Analytics} />
-                <ProtectedRoute requiredPermissions={['View Reports']} path="/dashboards/projects" exact component={ProjectsDashboard} />
-                <ProtectedRoute requiredPermissions={['View Reports']} path="/dashboards/system" exact component={System} />
-                <ProtectedRoute requiredPermissions={['View Reports']} path="/dashboards/monitor" exact component={Monitor} />
+                <Redirect from="/" to="/dashboards/financial" exact />
                 <ProtectedRoute requiredPermissions={['View Reports']} path="/dashboards/financial" exact component={Financial} />
-                <ProtectedRoute requiredPermissions={['View Reports']} path="/dashboards/stock" exact component={Stock} />
-                <ProtectedRoute requiredPermissions={['View Reports']} path="/dashboards/reports" exact component={Reports} />
-
-                <ProtectedRoute requiredPermissions={['View Reports']} path='/widgets' exact component={Widgets} />
-                
                 { /*    Cards Routes     */ }
                 <ProtectedRoute requiredPermissions={['View Reports']} path='/cards/cards' exact component={Cards} />
                 <ProtectedRoute requiredPermissions={['View Reports']} path='/cards/cardsheaders' exact component={CardsHeaders} />
-                
-                { /*    Layouts     */ }
-                <ProtectedRoute requiredPermissions={['View Reports']} path='/layouts/navbar' component={NavbarOnly} />
-                <ProtectedRoute requiredPermissions={['View Reports']} path='/layouts/sidebar' component={SidebarDefault} />
-                <ProtectedRoute requiredPermissions={['View Reports']} path='/layouts/sidebar-a' component={SidebarA} />
-                <ProtectedRoute requiredPermissions={['View Reports']} path="/layouts/sidebar-with-navbar" component={SidebarWithNavbar} />
-                <ProtectedRoute requiredPermissions={['View Reports']} path='/layouts/dnd-layout' component={DragAndDropLayout} />
+            
 
                 { /*    Interface Routes   */ }
                 <ProtectedRoute requiredPermissions={['View Reports']} component={ Accordions } path="/interface/accordions" />
@@ -233,19 +201,7 @@ export const RoutedContent = () => {
 //------ Custom Layout Parts --------
 export const RoutedNavbars  = () => (
     <Switch>
-        { /* Other Navbars: */}
-        <Route
-            component={ SidebarANavbar }
-            path="/layouts/sidebar-a"
-        />
-        <Route
-            component={ NavbarOnly.Navbar }
-            path="/layouts/navbar"
-        />
-        <Route
-            component={ SidebarWithNavbar.Navbar }
-            path="/layouts/sidebar-with-navbar"
-        />
+
         { /* Default Navbar: */}
         <Route
             component={ DefaultNavbar }
@@ -255,16 +211,6 @@ export const RoutedNavbars  = () => (
 
 export const RoutedSidebars = () => (
     <Switch>
-        { /* Other Sidebars: */}
-        <Route
-            component={ SidebarASidebar }
-            path="/layouts/sidebar-a"
-        />
-        <Route
-            component={ SidebarWithNavbar.Sidebar }
-            path="/layouts/sidebar-with-navbar"
-        />
-        { /* Default Sidebar: */}
         <Route
             component={ DefaultSidebar }
         />
