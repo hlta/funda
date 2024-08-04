@@ -18,10 +18,21 @@ export const SidebarMiddleNav = () => (
             <SidebarMenu.Item title="Cards" to='/cards/cards' exact />
             <SidebarMenu.Item title="Cards Headers" to='/cards/cardsheaders' exact />
         </SidebarMenu.Item>
-        { /* -------- Layouts ---------*/ }
+        { /* -------- Accounting ---------*/ }
         <SidebarMenu.Item
             icon={<i className="fa fa-fw fa-calculator"></i>}
             title="Accounting"
+        >
+            <SidebarMenu.Item title="Navbar" to='/layouts/navbar' exact />
+            <SidebarMenu.Item title="Sidebar" to='/layouts/sidebar' exact />
+            <SidebarMenu.Item title="Sidebar A" to='/layouts/sidebar-a' exact />
+            <SidebarMenu.Item title="Sidebar With Navbar" to="/layouts/sidebar-with-navbar" exact />
+            <SidebarMenu.Item title="Drag &amp; Drop" to='/layouts/dnd-layout' exact />
+        </SidebarMenu.Item>
+        { /* -------- Reports ---------*/ }
+        <SidebarMenu.Item
+            icon={<i className="fa fa-fw fa-line-chart"></i>}
+            title="Reports"
         >
             <SidebarMenu.Item title="Navbar" to='/layouts/navbar' exact />
             <SidebarMenu.Item title="Sidebar" to='/layouts/sidebar' exact />
