@@ -26,11 +26,11 @@ export const useOrganizations = () => {
     }, [apiClient]);
 
     return {
-        orgs: organizations,
-        selected: selectedOrg,
-        switchOrg,
+        organizations,
+        selectedOrg,
         addOrg,
         getOrg,
+        switchOrg,
         updateOrg,
     };
 };

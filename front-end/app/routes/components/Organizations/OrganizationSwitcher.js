@@ -43,7 +43,7 @@ AddNewOrganizationItem.propTypes = {
 };
 
 const OrganizationSwitcher = () => {
-    const { orgs, selected, switchOrg, addOrg } = useOrganizations();
+    const { organizations, selectedOrg, switchOrg, addOrg } = useOrganizations();
     const [modalOpen, setModalOpen] = useState(false);
     const [error, setError] = useState(null);
     const [serverErrors, setServerErrors] = useState({});
@@ -92,8 +92,8 @@ const OrganizationSwitcher = () => {
             return newErrors;
         });
     };
-
-    const selectedOrgName = orgs.find(org => org.id === selected)?.name || 'Default Organization';
+    console.log(organizations);
+    const selectedOrgName = organizations.find(org => org.id === selectedOrg)?.name || 'Default Organization';
 
     return (
         <>
@@ -103,11 +103,11 @@ const OrganizationSwitcher = () => {
                     <i className="fa fa-angle-down ml-2"></i>
                 </DropdownToggle>
                 <DropdownMenu persist>
-                    {orgs.map(org => (
+                    {organizations.map(org => (
                         <OrganizationItem
                             key={org.id}
                             org={org}
-                            selected={selected}
+                            selected={selectedOrg}
                             onSelect={handleOrgSwitch}
                         />
                     ))}
