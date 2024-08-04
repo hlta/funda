@@ -115,7 +115,7 @@ export const AuthProvider = ({ children }) => {
                         token: authData.token,
                         user: authData.user,
                         roles: authData.roles,
-                        selectedOrg: authData.SelectedOrg,
+                        selectedOrg: authData.selectedOrg,
                         permissions: authData.permissions,
                     },
                 });

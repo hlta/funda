@@ -92,7 +92,7 @@ const OrganizationSwitcher = () => {
             return newErrors;
         });
     };
-    console.log(organizations);
+   
     const selectedOrgName = organizations.find(org => org.id === selectedOrg)?.name || 'Default Organization';
 
     return (
