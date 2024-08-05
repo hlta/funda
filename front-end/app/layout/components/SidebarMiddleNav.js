@@ -15,58 +15,47 @@ export const SidebarMiddleNav = () => (
             icon={<i className="fa fa-fw fa-money"></i>}
             title="Business"
         >
-            <SidebarMenu.Item title="Cards" to='/cards/cards' exact />
-            <SidebarMenu.Item title="Cards Headers" to='/cards/cardsheaders' exact />
+            <SidebarMenu.Item title="Invoices" to='/cards/cards' exact />
+            <SidebarMenu.Item title="Quotes" to='/cards/cardsheaders' exact />
+            <SidebarMenu.Item title="Sales overview" to='/cards/cardsheaders' exact />
+            <SidebarMenu.Item title="Bills to pay" to='/cards/cardsheaders' exact />
+            <SidebarMenu.Item title="Purchase orders" to='/cards/cardsheaders' exact />
+            <SidebarMenu.Item title="Purchase overview" to='/cards/cardsheaders' exact />
+            <SidebarMenu.Item title="Expense claims" to='/cards/cardsheaders' exact />
+            <SidebarMenu.Item title="Products and services" to='/cards/cardsheaders' exact />
+
+
         </SidebarMenu.Item>
         { /* -------- Accounting ---------*/ }
         <SidebarMenu.Item
             icon={<i className="fa fa-fw fa-calculator"></i>}
             title="Accounting"
         >
-            <SidebarMenu.Item title="Navbar" to='/layouts/navbar' exact />
-            <SidebarMenu.Item title="Sidebar" to='/layouts/sidebar' exact />
-            <SidebarMenu.Item title="Sidebar A" to='/layouts/sidebar-a' exact />
-            <SidebarMenu.Item title="Sidebar With Navbar" to="/layouts/sidebar-with-navbar" exact />
-            <SidebarMenu.Item title="Drag &amp; Drop" to='/layouts/dnd-layout' exact />
+            <SidebarMenu.Item title="Bank accounts" to='/layouts/navbar' exact />
+            <SidebarMenu.Item title="Reports" to='/layouts/sidebar' exact />
+            <SidebarMenu.Item title="Chart of accounts" to='/layouts/dnd-layout' exact />
+            <SidebarMenu.Item title="Fixed assets" to='/layouts/dnd-layout' exact />
+
         </SidebarMenu.Item>
         { /* -------- Reports ---------*/ }
         <SidebarMenu.Item
             icon={<i className="fa fa-fw fa-line-chart"></i>}
             title="Reports"
         >
-            <SidebarMenu.Item title="Navbar" to='/layouts/navbar' exact />
-            <SidebarMenu.Item title="Sidebar" to='/layouts/sidebar' exact />
-            <SidebarMenu.Item title="Sidebar A" to='/layouts/sidebar-a' exact />
-            <SidebarMenu.Item title="Sidebar With Navbar" to="/layouts/sidebar-with-navbar" exact />
-            <SidebarMenu.Item title="Drag &amp; Drop" to='/layouts/dnd-layout' exact />
+            <SidebarMenu.Item title="Account Transactions" to='/layouts/sidebar' exact />
+            <SidebarMenu.Item title="Activity Statement" to='/layouts/sidebar' exact />
+            <SidebarMenu.Item title="Balance Sheet" to='/layouts/sidebar-a' exact />
+            <SidebarMenu.Item title="Profit Loss" to="/layouts/sidebar-with-navbar" exact />
         </SidebarMenu.Item>
         { /* -------- Contacts ---------*/ }
         <SidebarMenu.Item
             icon={<i className="fa fa-fw fa-address-book"></i>}
             title="Contacts"
         >
-            <SidebarMenu.Item title="Colors" to='/interface/colors' />
-            <SidebarMenu.Item title="Typography" to='/interface/typography' />
-            <SidebarMenu.Item title="Buttons" to='/interface/buttons' />
-            <SidebarMenu.Item title="Paginations" to='/interface/paginations' />
-            <SidebarMenu.Item title="Images" to='/interface/images' />
-            <SidebarMenu.Item title="Avatars" to='/interface/avatars' />
-            <SidebarMenu.Item title="Progress Bars" to='/interface/progress-bars' />
-            <SidebarMenu.Item title="Badges &amp; Labels" to='/interface/badges-and-labels' />
-            <SidebarMenu.Item title="Media Objects" to='/interface/media-objects' />
-            <SidebarMenu.Item title="List Groups" to='/interface/list-groups' />
-            <SidebarMenu.Item title="Alerts" to='/interface/alerts' />
-            <SidebarMenu.Item title="Accordions" to='/interface/accordions' />
-            <SidebarMenu.Item title="Tabs Pills" to='/interface/tabs-pills' />
-            <SidebarMenu.Item title="Tooltips &amp; Popovers" to='/interface/tooltips-and-popovers' />
-            <SidebarMenu.Item title="Dropdowns" to='/interface/dropdowns' />
-            <SidebarMenu.Item title="Modals" to='/interface/modals' />
-            <SidebarMenu.Item title="Breadcrumbs" to='/interface/breadcrumbs' />
-            <SidebarMenu.Item title="Navbars" to='/interface/navbars' />
-            <SidebarMenu.Item title="Notifications" to='/interface/notifications' />
-            <SidebarMenu.Item title="Crop Image" to='/interface/crop-image' />
-            <SidebarMenu.Item title="Drag &amp; Drop Elements" to='/interface/drag-and-drop-elements' />
-            <SidebarMenu.Item title="Calendar" to='/interface/calendar' />
+            <SidebarMenu.Item title="All contacts" to='/interface/colors' />
+            <SidebarMenu.Item title="Customers" to='/interface/typography' />
+            <SidebarMenu.Item title="Suppliers" to='/interface/buttons' />
+            
         </SidebarMenu.Item>
     </SidebarMenu >
 );
