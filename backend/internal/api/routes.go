@@ -13,12 +13,13 @@ import (
 
 // Dependencies holds all the dependencies for setting up routes
 type Dependencies struct {
-	Config      configs.Config
-	Logger      logger.Logger
-	UserService *service.UserService
-	AuthService *service.AuthService
-	OrgService  *service.OrganizationService
-	Enforcer    *casbin.Enforcer
+	Config         configs.Config
+	Logger         logger.Logger
+	UserService    *service.UserService
+	AuthService    *service.AuthService
+	OrgService     *service.OrganizationService
+	AccountService *service.AccountService
+	Enforcer       *casbin.Enforcer
 }
 
 // SetupRoutes initializes all the routes and their handlers
@@ -30,7 +31,7 @@ func SetupRoutes(e *echo.Echo, deps *Dependencies) {
 	e.Use(middleware.ErrorHandlingMiddleware)
 
 	// Initialize Handlers
-	handlers := NewHandlers(deps.AuthService, deps.OrgService, deps.Enforcer)
+	handlers := NewHandlers(deps.AuthService, deps.OrgService, deps.AccountService, deps.Enforcer)
 
 	// Register Routes
 	registerPublicRoutes(e, handlers.AuthHandler)

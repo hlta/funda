@@ -77,21 +77,24 @@ func initializeCasbin(database *gorm.DB, appLogger logger.Logger) *casbin.Enforc
 }
 
 // initializeServices initializes and returns all the necessary services
-func initializeServices(database *gorm.DB) (*service.UserService, *service.OrganizationService, *service.AuthService) {
+func initializeServices(database *gorm.DB) (*service.UserService, *service.OrganizationService, *service.AuthService, *service.AccountService) {
 	userLogger := logger.NewLogger("userService")
 	userRepository := store.NewGormUserRepository(database)
 	userService := service.NewUserService(userRepository, userLogger)
 
 	orgRepository := store.NewGormOrganizationRepository(database)
 	userOrgRepository := store.NewGormUserOrganizationRepository(database)
-
+	accountRepository := store.NewAccountRepository(database)
 	orgLogger := logger.NewLogger("orgService")
 	orgService := service.NewOrganizationService(orgRepository, userOrgRepository, orgLogger, database)
 
 	authLogger := logger.NewLogger("authService")
 	authService := service.NewAuthService(userService, orgService, authLogger, database)
 
-	return userService, orgService, authService
+	accountServiceLogger := logger.NewLogger("accountService")
+	accountService := service.NewAccountService(accountRepository, accountServiceLogger)
+
+	return userService, orgService, authService, &accountService
 }
 
 func main() {
@@ -106,17 +109,18 @@ func main() {
 
 	enforcer := initializeCasbin(database, appLogger)
 
-	_, orgService, authService := initializeServices(database)
+	_, orgService, authService, accountService := initializeServices(database)
 
 	e := echo.New()
 
 	// Setup dependencies
 	deps := &api.Dependencies{
-		Config:      config,
-		Logger:      appLogger,
-		AuthService: authService,
-		OrgService:  orgService,
-		Enforcer:    enforcer,
+		Config:         config,
+		Logger:         appLogger,
+		AuthService:    authService,
+		OrgService:     orgService,
+		AccountService: accountService,
+		Enforcer:       enforcer,
 	}
 
 	api.SetupRoutes(e, deps)
