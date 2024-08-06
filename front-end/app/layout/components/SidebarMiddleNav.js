@@ -33,7 +33,7 @@ export const SidebarMiddleNav = () => (
         >
             <SidebarMenu.Item title="Bank accounts" to='/layouts/navbar' exact />
             <SidebarMenu.Item title="Reports" to='/layouts/sidebar' exact />
-            <SidebarMenu.Item title="Chart of accounts" to='/layouts/dnd-layout' exact />
+            <SidebarMenu.Item title="Chart of accounts" to='/accounting/chart-of-accounts' exact />
             <SidebarMenu.Item title="Fixed assets" to='/layouts/dnd-layout' exact />
 
         </SidebarMenu.Item>

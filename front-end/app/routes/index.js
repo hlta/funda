@@ -17,6 +17,8 @@ import ProtectedRoute from './ProtectedRoute';
 import { DefaultNavbar } from './../layout/components/DefaultNavbar';
 import { DefaultSidebar } from './../layout/components/DefaultSidebar';
 
+// ----------- Accounting Imports ---------------
+import  ChartOfAccounts  from './Accounting/ChartOfAccounts'
 
 
 
@@ -27,11 +29,13 @@ export const RoutedContent = () => {
             <Switch>
                 <Redirect from="/" to="/dashboards/financial" exact />
                 <ProtectedRoute requiredPermissions={['View Reports']} path="/dashboards/financial" exact component={Financial} />
-                { /*    Pages Routes    */ }
-               
+                { /*    Accounting Routes    */ }
+                <ProtectedRoute requiredPermissions={['View Reports']} path="/accounting/chart-of-accounts" exact component={ChartOfAccounts} />
+
+
+                { /*    Auth Routes    */ }
                 <Route component={ Error404 } path="/error-404" />
                 <Route component={ ForgotPassword } path="/forgot-password" />
-             
                 <Route component={ Login } path="/login" />
                 <Route component={ Register } path="/register" />
 
