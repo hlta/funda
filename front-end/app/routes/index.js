@@ -18,8 +18,7 @@ import { DefaultNavbar } from './../layout/components/DefaultNavbar';
 import { DefaultSidebar } from './../layout/components/DefaultSidebar';
 
 // ----------- Accounting Imports ---------------
-import  ChartOfAccounts  from './Accounting/ChartOfAccounts'
-
+import { ChartOfAccounts, AccountDetail, AccountForm } from './Accounting/ChartOfAccounts';
 
 
 //------ Route Definitions --------
@@ -31,13 +30,15 @@ export const RoutedContent = () => {
                 <ProtectedRoute requiredPermissions={['View Reports']} path="/dashboards/financial" exact component={Financial} />
                 { /*    Accounting Routes    */ }
                 <ProtectedRoute requiredPermissions={['View Reports']} path="/accounting/chart-of-accounts" exact component={ChartOfAccounts} />
-
+                <ProtectedRoute requiredPermissions={['View Reports']} path="/accounting/chart-of-accounts/new" exact component={AccountForm} />
+                <ProtectedRoute requiredPermissions={['View Reports']} path="/accounting/chart-of-accounts/:id/edit" exact component={AccountForm} />
+                <ProtectedRoute requiredPermissions={['View Reports']} path="/accounting/chart-of-accounts/:id" exact component={AccountDetail} />
 
                 { /*    Auth Routes    */ }
-                <Route component={ Error404 } path="/error-404" />
-                <Route component={ ForgotPassword } path="/forgot-password" />
-                <Route component={ Login } path="/login" />
-                <Route component={ Register } path="/register" />
+                <Route component={Error404} path="/error-404" />
+                <Route component={ForgotPassword} path="/forgot-password" />
+                <Route component={Login} path="/login" />
+                <Route component={Register} path="/register" />
 
                 { /*    404    */ }
                 <Redirect to="/error-404" />
@@ -46,20 +47,15 @@ export const RoutedContent = () => {
 };
 
 //------ Custom Layout Parts --------
-export const RoutedNavbars  = () => (
+export const RoutedNavbars = () => (
     <Switch>
-
         { /* Default Navbar: */}
-        <Route
-            component={ DefaultNavbar }
-        />
+        <Route component={DefaultNavbar} />
     </Switch>  
 );
 
 export const RoutedSidebars = () => (
     <Switch>
-        <Route
-            component={ DefaultSidebar }
-        />
+        <Route component={DefaultSidebar} />
     </Switch>
 );
