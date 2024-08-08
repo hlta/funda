@@ -1,10 +1,11 @@
-// api/account_handler.go
 package api
 
 import (
 	"net/http"
 	"strconv"
 
+	"funda/internal/auth"
+	"funda/internal/constants"
 	"funda/internal/model"
 	"funda/internal/response"
 	"funda/internal/service"
@@ -36,6 +37,14 @@ func (h *AccountHandler) CreateAccount(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request payload")
 	}
 
+	claims := c.Get(constants.UserClaimsKey).(*auth.Claims)
+	account.OrgID = claims.OrgID
+
+	existingAccount, err := h.accountService.FindByCodeAndOrg(account.Code, account.OrgID)
+	if err == nil && existingAccount != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Account with the given code already exists for this organization")
+	}
+
 	if err := h.accountService.CreateAccount(&account); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to create account")
 	}
@@ -53,7 +62,8 @@ func (h *AccountHandler) GetAccountByID(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid account ID")
 	}
 
-	accountResponse, err := h.accountService.GetAccountResponseById(uint(id))
+	claims := c.Get(constants.UserClaimsKey).(*auth.Claims)
+	accountResponse, err := h.accountService.GetAccountResponseByIdAndOrg(uint(id), claims.OrgID)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, "Account not found")
 	}
@@ -65,7 +75,8 @@ func (h *AccountHandler) GetAccountByID(c echo.Context) error {
 }
 
 func (h *AccountHandler) GetAllAccounts(c echo.Context) error {
-	accountResponses, err := h.accountService.GetAllAccountResponses()
+	claims := c.Get(constants.UserClaimsKey).(*auth.Claims)
+	accountResponses, err := h.accountService.GetAllAccountResponsesByOrg(claims.OrgID)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to retrieve accounts")
 	}
@@ -87,12 +98,15 @@ func (h *AccountHandler) UpdateAccount(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request payload")
 	}
 
-	account.Model.ID = uint(id) // Set the ID using the embedded gorm.Model
+	claims := c.Get(constants.UserClaimsKey).(*auth.Claims)
+	account.OrgID = claims.OrgID
+
+	account.Model.ID = uint(id)
 	if err := h.accountService.UpdateAccount(&account); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to update account")
 	}
 
-	accountResponse, _ := h.accountService.GetAccountResponseById(uint(id))
+	accountResponse, _ := h.accountService.GetAccountResponseByIdAndOrg(uint(id), claims.OrgID)
 	return c.JSON(http.StatusOK, response.GenericResponse{
 		Message: "Account updated successfully",
 		Data:    accountResponse,
@@ -105,8 +119,12 @@ func (h *AccountHandler) DeleteAccount(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid account ID")
 	}
 
+	claims := c.Get(constants.UserClaimsKey).(*auth.Claims)
+
 	account := model.Account{}
-	account.Model.ID = uint(id) // Set the ID using the embedded gorm.Model
+	account.Model.ID = uint(id)
+	account.OrgID = claims.OrgID
+
 	if err := h.accountService.DeleteAccount(&account); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to delete account")
 	}
