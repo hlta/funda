@@ -50,4 +50,5 @@ func registerProtectedRoutes(e *echo.Echo, deps *Dependencies, handlers *Handler
 	protectedRoutes.Use(middleware.CasbinMiddleware(deps.Enforcer, deps.Logger))
 
 	handlers.OrganizationHandler.Register(protectedRoutes)
+	handlers.AccountHandler.Register(protectedRoutes)
 }
