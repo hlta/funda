@@ -6,7 +6,7 @@ import { customFilter } from 'react-bootstrap-table2-filter';
 import {
     Form,
     Input
-} from './../../../../components';
+} from '../../../../../components';
 
 class TextFilter extends React.Component {
     static propTypes = {

@@ -4,7 +4,7 @@ import _ from 'lodash';
 import { customFilter } from 'react-bootstrap-table2-filter';
 import uid from 'uuid/v4';
 
-import { CustomInput } from './../../../../components';
+import { CustomInput } from '../../../../../components';
 
 class SelectFilter extends React.Component {
     static propTypes = {

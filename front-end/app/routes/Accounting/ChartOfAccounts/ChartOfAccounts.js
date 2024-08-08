@@ -6,7 +6,7 @@ import {
 } from './../../../components';
 import { setupPage } from './../../../components/Layout/setupPage';
 import { HeaderMain } from "../../components/HeaderMain";
-import AccountList from './AccountList';
+import { AccountList } from './AccountList';
 
 const ChartOfAccounts = () => (
     <Container>

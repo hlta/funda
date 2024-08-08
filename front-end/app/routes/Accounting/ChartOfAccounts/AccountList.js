@@ -1,283 +1,307 @@
-import React, { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
-import BootstrapTable from 'react-bootstrap-table-next';
-import paginationFactory from 'react-bootstrap-table2-paginator';
-import filterFactory, { Comparator } from 'react-bootstrap-table2-filter';
-import ToolkitProvider from 'react-bootstrap-table2-toolkit';
-import { Button, CustomInput, ButtonGroup } from 'reactstrap';
-import axios from 'axios';
-import { useHistory } from 'react-router-dom';
-import ExportButton from './ExportButton';
-import SearchBar from './SearchBar';
-import PaginationPanel from './PaginationPanel';
-import SizePerPageDropdown from './SizePerPageDropdown';
-import PaginationTotal from './PaginationTotal';
-import { buildCustomTextFilter, buildCustomSelectFilter, buildCustomNumberFilter } from './filters';
-import './AccountList.css'; // Import custom CSS file
+import React from "react";
+import BootstrapTable from "react-bootstrap-table-next";
+import paginationFactory from "react-bootstrap-table2-paginator";
+import filterFactory, {
+  Comparator,
+  dateFilter,
+} from "react-bootstrap-table2-filter";
+import ToolkitProvider from "react-bootstrap-table2-toolkit";
+import _ from "lodash";
+import { faker } from "@faker-js/faker";
+import moment from "moment";
+
+import {
+  Badge,
+  Button,
+  CustomInput,
+  StarRating,
+  ButtonGroup,
+} from "./../../../components";
+import { ExportButton, SearchBar, PaginationPanel, PaginationTotal, SizePerPageButton } from "./components/tables";
+import { randomArray } from "./../../../utilities";
+import {
+  buildCustomTextFilter,
+  buildCustomSelectFilter,
+  buildCustomNumberFilter,
+} from "./components/filters";
+
+const INITIAL_PRODUCTS_COUNT = 500;
+
+const ProductQuality = {
+  Good: "product-quality__good",
+  Bad: "product-quality__bad",
+  Unknown: "product-quality__unknown",
+};
 
 const sortCaret = (order) => {
   if (!order) return <i className="fa fa-fw fa-sort text-muted"></i>;
-  if (order === 'asc') return <i className="fa fa-fw fa-sort-up text-muted"></i>;
-  if (order === 'desc') return <i className="fa fa-fw fa-sort-down text-muted"></i>;
-  return null;
+  if (order) return <i className={`fa fa-fw text-muted fa-sort-${order}`}></i>;
 };
 
-const AccountList = () => {
-  const [accounts, setAccounts] = useState([]);
-  const [selected, setSelected] = useState([]);
-  const history = useHistory();
+const generateRow = (index) => ({
+  id: index,
+  name: faker.commerce.productName(),
+  quality: randomArray([
+    ProductQuality.Bad,
+    ProductQuality.Good,
+    ProductQuality.Unknown,
+  ]),
+  price: (1000 + Math.random() * 1000).toFixed(2),
+  satisfaction: Math.round(Math.random() * 6),
+  inStockDate: faker.date.past(),
+});
 
-  useEffect(() => {
-    const fetchAccounts = async () => {
-      const response = await axios.get('/api/accounts');
-      setAccounts(response.data.data);
+export class AccountList extends React.Component {
+  constructor() {
+    super();
+
+    this.state = {
+      products: _.times(INITIAL_PRODUCTS_COUNT, generateRow),
+      selected: [],
     };
-    fetchAccounts();
-  }, []);
 
-  const handleSelect = (row, isSelected) => {
+    this.headerCheckboxRef = React.createRef();
+  }
+
+  handleSelect(row, isSelected) {
     if (isSelected) {
-      setSelected([...selected, row.id]);
+      this.setState({ selected: [...this.state.selected, row.id] });
     } else {
-      setSelected(selected.filter((itemId) => itemId !== row.id));
+      this.setState({
+        selected: this.state.selected.filter((itemId) => itemId !== row.id),
+      });
     }
-  };
+  }
 
-  const handleSelectAll = (isSelected, rows) => {
+  handleSelectAll(isSelected, rows) {
     if (isSelected) {
-      setSelected(rows.map((row) => row.id));
+      this.setState({ selected: _.map(rows, "id") });
     } else {
-      setSelected([]);
+      this.setState({ selected: [] });
     }
-  };
+  }
 
-  const handleAddRow = () => {
-    history.push('/accounting/chart-of-accounts/new');
-  };
+  handleAddRow() {
+    const currentSize = this.state.products.length;
 
-  const handleDeleteRow = () => {
-    setAccounts(accounts.filter((account) => !selected.includes(account.id)));
-    setSelected([]);
-  };
+    this.setState({
+      products: [generateRow(currentSize + 1), ...this.state.products],
+    });
+  }
 
-  const handleResetFilters = () => {
-    codeFilter('');
-    nameFilter('');
-    typeFilter('');
-    taxRateFilter('');
-    balanceFilter('');
-    ytdFilter('');
-  };
-
-  let codeFilter;
-  let nameFilter;
-  let typeFilter;
-  let taxRateFilter;
-  let balanceFilter;
-  let ytdFilter;
-
-  const columnDefs = [
-    {
-      dataField: 'id',
-      text: 'Account ID',
-      headerFormatter: (column) => (
-        <React.Fragment>
-          <span className="text-nowrap">{column.text}</span>
-          <a
-            href="javascript:;"
-            className="d-block small text-decoration-none text-nowrap"
-            onClick={handleResetFilters}
-          >
-            Reset Filters <i className="fa fa-times fa-fw text-danger"></i>
-          </a>
-        </React.Fragment>
+  handleDeleteRow() {
+    this.setState({
+      products: _.filter(
+        this.state.products,
+        (product) => !_.includes(this.state.selected, product.id)
       ),
-    },
-    {
-      dataField: 'code',
-      text: 'Code',
-      sort: true,
-      sortCaret,
-      formatter: (cell) => <span className="text-inverse">{cell}</span>,
-      ...buildCustomTextFilter({
-        placeholder: 'Enter code...',
-        getFilter: (filter) => {
-          codeFilter = filter;
-        },
-      }),
-    },
-    {
-      dataField: 'name',
-      text: 'Name',
-      sort: true,
-      sortCaret,
-      formatter: (cell) => <span className="text-inverse">{cell}</span>,
-      ...buildCustomTextFilter({
-        placeholder: 'Enter name...',
-        getFilter: (filter) => {
-          nameFilter = filter;
-        },
-      }),
-    },
-    {
-      dataField: 'type',
-      text: 'Type',
-      sort: true,
-      sortCaret,
-      ...buildCustomSelectFilter({
-        placeholder: 'Select type',
-        options: [
-          { value: 'Asset', label: 'Asset' },
-          { value: 'Liability', label: 'Liability' },
-          { value: 'Equity', label: 'Equity' },
-          { value: 'Expense', label: 'Expense' },
-          { value: 'Revenue', label: 'Revenue' },
-        ],
-        getFilter: (filter) => {
-          typeFilter = filter;
-        },
-      }),
-    },
-    {
-      dataField: 'tax_rate',
-      text: 'Tax Rate',
-      sort: true,
-      sortCaret,
-      ...buildCustomTextFilter({
-        placeholder: 'Enter tax rate...',
-        getFilter: (filter) => {
-          taxRateFilter = filter;
-        },
-      }),
-    },
-    {
-      dataField: 'balance',
-      text: 'Balance',
-      sort: true,
-      sortCaret,
-      formatter: (cell) => `$${cell.toFixed(2)}`,
-      ...buildCustomNumberFilter({
-        comparators: [Comparator.EQ, Comparator.GT, Comparator.LT],
-        getFilter: (filter) => {
-          balanceFilter = filter;
-        },
-      }),
-    },
-    {
-      dataField: 'ytd',
-      text: 'YTD',
-      sort: true,
-      sortCaret,
-      formatter: (cell) => `$${cell.toFixed(2)}`,
-      ...buildCustomNumberFilter({
-        comparators: [Comparator.EQ, Comparator.GT, Comparator.LT],
-        getFilter: (filter) => {
-          ytdFilter = filter;
-        },
-      }),
-    },
-  ];
+    });
+  }
 
-  const paginationDef = paginationFactory({
-    paginationSize: 5,
-    showTotal: true,
-    pageListRenderer: (props) => (
-      <PaginationPanel
-        {...props}
-        size="sm"
-        className="ml-md-auto mt-2 mt-md-0"
-      />
-    ),
-    sizePerPageRenderer: (props) => <SizePerPageDropdown {...props} />,
-    paginationTotalRenderer: (from, to, size) => (
-      <PaginationTotal {...{ from, to, size }} />
-    ),
-  });
+  handleResetFilters() {
+    this.nameFilter("");
+    this.qualityFilter("");
+    this.priceFilter("");
+    this.satisfactionFilter("");
+  }
 
-  const selectRowConfig = {
-    mode: 'checkbox',
-    selected: selected,
-    onSelect: handleSelect,
-    onSelectAll: handleSelectAll,
-    selectionRenderer: ({ mode, checked, disabled }) => (
-      <CustomInput type={mode} checked={checked} disabled={disabled} />
-    ),
-    selectionHeaderRenderer: ({ mode, checked, indeterminate }) => (
-      <CustomInput
-        type={mode}
-        checked={checked}
-        innerRef={(el) => el && (el.indeterminate = indeterminate)}
-      />
-    ),
-  };
+  createColumnDefinitions() {
+    return [
+      {
+        dataField: "id",
+        text: "Product ID",
+        headerFormatter: (column) => (
+          <React.Fragment>
+            <span className="text-nowrap">{column.text}</span>
+            <a
+              href="javascript:;"
+              className="d-block small text-decoration-none text-nowrap"
+              onClick={this.handleResetFilters.bind(this)}
+            >
+              Reset Filters <i className="fa fa-times fa-fw text-danger"></i>
+            </a>
+          </React.Fragment>
+        ),
+      },
+      {
+        dataField: "name",
+        text: "Product Name",
+        sort: true,
+        sortCaret,
+        formatter: (cell) => <span className="text-inverse">{cell}</span>,
+        ...buildCustomTextFilter({
+          placeholder: "Enter product name...",
+          getFilter: (filter) => {
+            this.nameFilter = filter;
+          },
+        }),
+      },
+      {
+        dataField: "quality",
+        text: "Product Quality",
+        formatter: (cell) => {
+          let pqProps;
+          switch (cell) {
+            case ProductQuality.Good:
+              pqProps = {
+                color: "success",
+                text: "Good",
+              };
+              break;
+            case ProductQuality.Bad:
+              pqProps = {
+                color: "danger",
+                text: "Bad",
+              };
+              break;
+            case ProductQuality.Unknown:
+            default:
+              pqProps = {
+                color: "secondary",
+                text: "Unknown",
+              };
+          }
 
-  return (
-    <ToolkitProvider
-      keyField="id"
-      data={accounts}
-      columns={columnDefs}
-      search
-      exportCSV
-    >
-      {(props) => (
-        <React.Fragment>
-          <div className="d-flex justify-content-end align-items-center mb-2">
-            <h6 className="my-0">Chart of Accounts</h6>
-            <div className="d-flex ml-auto">
-              <SearchBar className="mr-2" {...props.searchProps} />
-              <ButtonGroup>
-                <ExportButton {...props.csvProps}>Export</ExportButton>
-                <Button
-                  size="sm"
-                  outline
-                  onClick={handleDeleteRow}
-                >
-                  Delete
-                </Button>
-                <Button
-                  size="sm"
-                  outline
-                  onClick={handleAddRow}
-                >
-                  <i className="fa fa-fw fa-plus"></i>
-                </Button>
-              </ButtonGroup>
+          return <Badge color={pqProps.color}>{pqProps.text}</Badge>;
+        },
+        sort: true,
+        sortCaret,
+        ...buildCustomSelectFilter({
+          placeholder: "Select Quality",
+          options: [
+            { value: ProductQuality.Good, label: "Good" },
+            { value: ProductQuality.Bad, label: "Bad" },
+            { value: ProductQuality.Unknown, label: "Unknown" },
+          ],
+          getFilter: (filter) => {
+            this.qualityFilter = filter;
+          },
+        }),
+      },
+      {
+        dataField: "price",
+        text: "Product Price",
+        sort: true,
+        sortCaret,
+        ...buildCustomNumberFilter({
+          comparators: [Comparator.EQ, Comparator.GT, Comparator.LT],
+          getFilter: (filter) => {
+            this.priceFilter = filter;
+          },
+        }),
+      },
+      {
+        dataField: "satisfaction",
+        text: "Buyer Satisfaction",
+        sort: true,
+        sortCaret,
+        formatter: (cell) => <StarRating at={cell} max={6} />,
+        ...buildCustomSelectFilter({
+          placeholder: "Select Satisfaction",
+          options: _.times(6, (i) => ({ value: i + 1, label: i + 1 })),
+          getFilter: (filter) => {
+            this.satisfactionFilter = filter;
+          },
+        }),
+      },
+      {
+        dataField: "inStockDate",
+        text: "In Stock From",
+        formatter: (cell) => moment(cell).format("DD/MM/YYYY"),
+        filter: dateFilter({
+          className: "d-flex align-items-center",
+          comparatorClassName: "d-none",
+          dateClassName: "form-control form-control-sm",
+          comparator: Comparator.GT,
+          getFilter: (filter) => {
+            this.stockDateFilter = filter;
+          },
+        }),
+        sort: true,
+        sortCaret,
+      },
+    ];
+  }
+
+  render() {
+    const columnDefs = this.createColumnDefinitions();
+    const paginationDef = paginationFactory({
+      paginationSize: 5,
+      showTotal: true,
+      pageListRenderer: (props) => (
+        <PaginationPanel
+          {...props}
+          size="sm"
+          className="ml-md-auto mt-2 mt-md-0"
+        />
+      ),
+      sizePerPageRenderer: (props) => <SizePerPageButton {...props} />,
+      paginationTotalRenderer: (from, to, size) => (
+        <PaginationTotal {...{ from, to, size }} />
+      ),
+    });
+    const selectRowConfig = {
+      mode: "checkbox",
+      selected: this.state.selected,
+      onSelect: this.handleSelect.bind(this),
+      onSelectAll: this.handleSelectAll.bind(this),
+      selectionRenderer: ({ mode, checked, disabled }) => (
+        <CustomInput type={mode} checked={checked} disabled={disabled} />
+      ),
+      selectionHeaderRenderer: ({ mode, checked, indeterminate }) => (
+        <CustomInput
+          type={mode}
+          checked={checked}
+          innerRef={(el) => el && (el.indeterminate = indeterminate)}
+        />
+      ),
+    };
+
+    return (
+      <ToolkitProvider
+        keyField="id"
+        data={this.state.products}
+        columns={columnDefs}
+        search
+        exportCSV
+      >
+        {(props) => (
+          <React.Fragment>
+            <div className="d-flex justify-content-end align-items-center mb-2">
+              <h6 className="my-0">AdvancedTable A</h6>
+              <div className="d-flex ml-auto">
+                <SearchBar className="mr-2" {...props.searchProps} />
+                <ButtonGroup>
+                  <ExportButton {...props.csvProps}>Export</ExportButton>
+                  <Button
+                    size="sm"
+                    outline
+                    onClick={this.handleDeleteRow.bind(this)}
+                  >
+                    Delete
+                  </Button>
+                  <Button
+                    size="sm"
+                    outline
+                    onClick={this.handleAddRow.bind(this)}
+                  >
+                    <i className="fa fa-fw fa-plus"></i>
+                  </Button>
+                </ButtonGroup>
+              </div>
             </div>
-          </div>
-          <div className="filter-container">
-            <div className="filter-box">
-              {columnDefs.map((column, idx) => (
-                column.filter && (
-                  <div key={idx} className="filter-item">
-                    {column.filter}
-                  </div>
-                )
-              ))}
-            </div>
-          </div>
-          <BootstrapTable
-            classes="table-responsive"
-            pagination={paginationDef}
-            filter={filterFactory()}
-            selectRow={selectRowConfig}
-            bordered={false}
-            responsive
-            {...props.baseProps}
-          />
-        </React.Fragment>
-      )}
-    </ToolkitProvider>
-  );
-};
-
-AccountList.propTypes = {
-  searchProps: PropTypes.shape({
-    onSearch: PropTypes.func,
-    onClear: PropTypes.func,
-    searchText: PropTypes.string,
-  }),
-  csvProps: PropTypes.object,
-  baseProps: PropTypes.object,
-};
-
-export default AccountList;
+            <BootstrapTable
+              classes="table-responsive"
+              pagination={paginationDef}
+              filter={filterFactory()}
+              selectRow={selectRowConfig}
+              bordered={false}
+              responsive
+              {...props.baseProps}
+            />
+          </React.Fragment>
+        )}
+      </ToolkitProvider>
+    );
+  }
+}

@@ -4,7 +4,7 @@ import _ from 'lodash';
 import uid from 'uuid/v4';
 import { customFilter, Comparator, FILTER_TYPES } from 'react-bootstrap-table2-filter';
 
-import { CustomInput, Input } from './../../../../components';
+import { CustomInput, Input } from '../../../../../components';
 
 const comparatorSign = (comp) => {
     switch (comp) {
