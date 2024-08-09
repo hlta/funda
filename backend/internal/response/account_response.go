@@ -8,6 +8,5 @@ type AccountResponse struct {
 	TaxRate string  `json:"tax_rate"`
 	Balance float64 `json:"balance"`
 	OrgID   uint    `json:"org_id"`
-	OrgName string  `json:"org_name"`
 	YTD     float64 `json:"ytd"` // Year to Date balance
 }

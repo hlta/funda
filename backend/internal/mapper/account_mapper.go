@@ -15,7 +15,6 @@ func ToAccountResponse(account model.Account, ytd float64) response.AccountRespo
 		TaxRate: account.TaxRate,
 		Balance: account.Balance,
 		OrgID:   account.OrgID,
-		OrgName: account.Organization.Name,
 		YTD:     ytd,
 	}
 }
